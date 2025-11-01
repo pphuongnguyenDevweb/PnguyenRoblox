@@ -1,0 +1,61 @@
+[10/23/2025, 9:04:27 PM] Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at C:\Users\Admin\Desktop\Shoprobloxvn\server.js:1408:16
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[10/23/2025, 9:07:57 PM] Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at C:\Users\Admin\Desktop\Shoprobloxvn\server.js:1408:16
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[10/23/2025, 9:20:11 PM] Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at C:\Users\Admin\Desktop\Shoprobloxvn\server.js:1408:16
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[10/23/2025, 9:22:23 PM] Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at C:\Users\Admin\Desktop\Shoprobloxvn\server.js:1408:16
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[10/23/2025, 9:22:33 PM] Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at C:\Users\Admin\Desktop\Shoprobloxvn\server.js:1408:16
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[10/27/2025, 7:21:16 PM] TypeError: Router.use() requires a middleware function but got a Object
+    at Function.use (C:\Users\Admin\Desktop\Shoprobloxvn\node_modules\express\lib\router\index.js:469:13)
+    at Function.<anonymous> (C:\Users\Admin\Desktop\Shoprobloxvn\node_modules\express\lib\application.js:227:21)
+    at Array.forEach (<anonymous>)
+    at Function.use (C:\Users\Admin\Desktop\Shoprobloxvn\node_modules\express\lib\application.js:224:7)
+    at Object.<anonymous> (C:\Users\Admin\Desktop\Shoprobloxvn\server.js:273:5)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+
+[10/30/2025, 10:39:22 PM] Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at C:\Users\Admin\Desktop\Shoprobloxvn\server.js:1548:16
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[10/30/2025, 10:41:22 PM] Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at C:\Users\Admin\Desktop\Shoprobloxvn\server.js:1548:16
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+

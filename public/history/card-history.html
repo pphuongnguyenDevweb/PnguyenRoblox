@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lịch Sử Giao Dịch Thẻ Cào - Shop Roblox VN</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <!-- Giả định file header.css có tồn tại, nếu không có thể gây lỗi style -->
+    <link rel="stylesheet" href="../header/header.css" /> 
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <style>
+
+
+
+.spacer-200 {
+  /* Chiều cao 200 pixels */
+  height: 50px; 
+  /* Đôi khi dùng "min-height" để đảm bảo khoảng trống không bị mất */
+  min-height: 50px;
+}
+
+
+        /* CSS Tùy chỉnh */
+        /* Cập nhật Card để có bo góc và đổ bóng đẹp hơn */
+        .card { 
+            background-color: #ffffff; 
+            border-radius: 1rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05); /* shadow-xl nhẹ nhàng */
+        }
+        
+        /* Cập nhật Badge để có bo góc đẹp và dễ nhìn hơn */
+        .badge { display: inline-block; padding: 0.3em 0.7em; font-size: 0.75rem; font-weight: 600; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 9999px; } /* rounded-full */
+        .bg-primary { background-color: #d35400; color: white; }
+        .bg-warning { background-color: #f39c12; color: white; }
+        .bg-success { background-color: #2ecc71; color: white; }
+        .bg-danger { background-color: #e74c3c; color: white; }
+        .bg-secondary { background-color: #95a5a6; color: white; }
+        
+        /* Hiệu ứng hover cho hàng */
+        .table-row-hover:hover {
+            background-color: #f9fafb; /* gray-50 */
+        }
+
+        @media (min-width: 768px) {
+            #historyCardView {
+                display: none;
+            }
+        }
+    </style>
+
+    
+<style>
+  #floatingBell {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #FFD700;
+    color: white;
+    border-radius: 50%;
+    font-size: 28px;
+    text-align: center;
+    line-height: 60px;
+    cursor: grab;
+    z-index: 9999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease;
+    user-select: none;
+    touch-action: none;
+  }
+
+  #floatingBell:hover {
+    transform: scale(1.1);
+  }
+
+  .notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: red;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: none;
+  }
+
+  /* Hiệu ứng rung chuông */
+  @keyframes ring {
+    0% { transform: rotate(0); }
+    10% { transform: rotate(15deg); }
+    20% { transform: rotate(-10deg); }
+    30% { transform: rotate(8deg); }
+    40% { transform: rotate(-6deg); }
+    50% { transform: rotate(4deg); }
+    60%,100% { transform: rotate(0); }
+  }
+  .ringing {
+    animation: ring 1s ease-in-out;
+  }
+
+  
+</style>
+
+
+</head>
+<div class="spacer-200"></div>
+
+
+<body class="bg-gray-100 min-h-screen font-sans">
+    <div id="header-container"></div>
+    <div id="floatingBell" title="Thông báo">
+  🔔
+  <div class="notification-dot" id="notifyDot"></div>
+</div>
+
+
+    
+    <div id="main-content" class="content-wrapper transition-all duration-150 py-8">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <main>
+                <!-- Tiêu đề và biểu tượng đẹp hơn -->
+                <h1 class="text-3xl font-extrabold text-gray-800 mb-8 border-l-4 border-blue-600 pl-4 rounded-md bg-white p-3 shadow-md">
+                    <i class="fas fa-history text-blue-500 mr-2"></i> Lịch Sử Nạp Thẻ Cào
+                </h1>
+                
+                <div class="card p-4 shadow-2xl overflow-x-auto">
+                    
+                    <!-- 1. CARD VIEW (Hiển thị trên Mobile, ẩn trên Desktop) -->
+                    <div id="historyCardView" class="space-y-3 mb-6 md:hidden">
+                        <div class="text-center py-6 text-gray-500">Đang tải dữ liệu, vui lòng chờ...</div>
+                    </div>
+
+                    <!-- 2. TABLE VIEW (Hiển thị trên cả Mobile và Desktop, mobile cần cuộn ngang) -->
+                    <!-- Bỏ class 'hidden md:block' để hiển thị trên Mobile -->
+                    <div class="w-full">
+                        <h2 class="text-xl font-bold text-gray-700 mb-3 md:hidden">Bảng Chi Tiết (Cuộn Ngang)</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-blue-50/50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider rounded-tl-lg">Thời Gian</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Nhà mạng</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider min-w-[120px]">Seri</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Mã thẻ </th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Mệnh giá </th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Trạng thái</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider rounded-tr-lg">Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Dữ liệu sẽ được điền vào đây -->
+                                    <tr><td colspan="7" class="text-center py-6 text-gray-500">Đang tải dữ liệu, vui lòng chờ...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+
+<div id="contact-footer"></div>
+
+    <script src="../header/header.js"></script> 
+
+
+<script>
+// Badge trạng thái
+function getStatusBadge(status) {
+    const s = (status || '').toLowerCase();
+    if (s.includes('completed') || s.includes('thành công') || s.includes('success')) return '<span class="badge bg-success">Thành Công</span>';
+    if (s.includes('pending') || s.includes('chờ')) return '<span class="badge bg-warning">Chờ Xử Lý</span>';
+    if (s.includes('failed') || s.includes('thất bại')) return '<span class="badge bg-danger">Thất Bại</span>';
+    return '<span class="badge bg-secondary">Không rõ</span>';
+}
+
+// Render thẻ cào
+function renderCardHistory(historyData) {
+    const tbody = document.getElementById('historyTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    if (!historyData || historyData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-gray-500">Chưa có dữ liệu thẻ cào.</td></tr>`;
+        return;
+    }
+
+    historyData.forEach(item => {
+        if (item.type === 'recharge' || item.type === 'card_recharge') {
+            const id = item._id || item.id;
+            const date = new Date(item.created_at || item.createdAt || item.time).toLocaleString('vi-VN');
+            const statusBadge = getStatusBadge(item.status);
+            const denomination = item.denomination || item.amount || 0;
+            const receivedAmount = item.received_amount || denomination;
+            const amountChange = (item.status || '').toLowerCase().includes('success') ? `+${receivedAmount.toLocaleString()}₫` : '0₫';
+            const amountColor = (item.status || '').toLowerCase().includes('success') ? 'text-green-600' : 'text-gray-500';
+            const adminNote = item.admin_note || item.note || 'N/A';
+
+            const row = `
+            <tr class="hover:bg-gray-50 transition-all" data-id="${id}">
+                <td class="px-4 py-2">${date}</td>
+                <td class="px-4 py-2">${item.network_provider || 'N/A'}</td>
+                <td class="px-4 py-2"><code>${item.card_serial || 'N/A'}</code></td>
+                <td class="px-4 py-2"><code>${item.card_code || 'N/A'}</code></td>
+                <td class="px-4 py-2">${denomination.toLocaleString()}₫</td>
+                <td class="px-4 py-2 text-center">${statusBadge}</td>
+                <td class="px-4 py-2">${adminNote}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        }
+    });
+}
+
+// Fetch lịch sử thẻ cào
+async function fetchCardHistory() {
+    const token = localStorage.getItem("token");
+    const tbody = document.getElementById('historyTableBody');
+    if (!tbody) return;
+
+    if (!token) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Vui lòng đăng nhập để xem lịch sử.</td></tr>`;
+        return;
+    }
+
+    try {
+        if (typeof API_BASE === 'undefined') {
+            console.error('API_BASE chưa được định nghĩa');
+            return;
+        }
+
+        const res = await fetch(`${API_BASE}/history`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+            localStorage.removeItem("token");
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.</td></tr>`;
+            return;
+        }
+
+        if (!res.ok) throw new Error(`Lỗi Server: ${res.status}`);
+        const data = await res.json();
+        renderCardHistory(data.history || data.transactions || []);
+    } catch (error) {
+        console.error("Lỗi tải lịch sử thẻ cào:", error);
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-500">Lỗi mạng hoặc server không phản hồi: ${error.message}</td></tr>`;
+    }
+}
+
+// DOM Loaded
+document.addEventListener("DOMContentLoaded", () => {
+    showUserHeader();
+    fetchCardHistory();
+
+    const userButton = document.getElementById("user-info-button");
+    const dropdown = document.getElementById("user-dropdown");
+    if (userButton && dropdown) {
+        userButton.addEventListener("click", e => {
+            e.stopPropagation();
+            dropdown.classList.toggle("hidden");
+        });
+        document.addEventListener("click", e => {
+            if (!userButton.contains(e.target)) dropdown.classList.add("hidden");
+        });
+    }
+});
+
+
+
+
+
+
+
+
+// Cập nhật liên tục mỗi 5s
+setInterval(fetchCardHistory, 50000);
+</script>
+  <script src="../thong-bao.js"></script>
+<script>
+  // Tải và chèn footer liên hệ
+  fetch("../Lien-he.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("contact-footer").innerHTML = html;
+    })
+    .catch(err => console.error("Lỗi khi tải footer:", err));
+</script>
+
+<script>
+(function(){
+  // WHITELIST: nếu user là admin (bạn thay bằng check thật), bỏ qua
+  const isAdmin = !!window.__IS_ADMIN__; // set ở server-render nếu cần
+  if(isAdmin) return;
+
+  // overlay nhẹ nhàng
+  function showNotice(reason) {
+    if(document.getElementById('__devtools_notice')) return;
+    const d = document.createElement('div');
+    d.id = '__devtools_notice';
+    d.style.cssText = [
+      'position:fixed','left:12px','bottom:12px','z-index:2147483647',
+      'background:rgba(0,0,0,0.8)','color:#fff','padding:10px 14px',
+      'border-radius:8px','font-family:Arial,Helvetica,sans-serif','font-size:13px'
+    ].join(';');
+    d.innerHTML = `<strong>Cảnh báo bảo mật</strong><div style="margin-top:6px">Việc mở DevTools/Inspector được phát hiện (${reason}). Nếu bạn không phải là developer, xin đóng DevTools để tiếp tục.</div>`;
+    document.body.appendChild(d);
+    setTimeout(()=> { d.remove && d.remove(); }, 8000);
+  }
+
+  // chặn context menu? (bật/tắt tùy trang)
+  // document.addEventListener('contextmenu', e => e.preventDefault());
+
+  // chặn phím tắt
+  document.addEventListener('keydown', (e) => {
+    const key = e.key?.toLowerCase();
+    if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c')) ||
+        (e.ctrlKey && key === 'u')) {
+      e.preventDefault();
+      showNotice('phím tắt');
+    }
+  });
+
+  // detect bằng resize (răn đe)
+  let lastOpen = false;
+  const detectResize = () => {
+    const open = (window.outerWidth - window.innerWidth > 160) || (window.outerHeight - window.innerHeight > 160);
+    if(open && !lastOpen) showNotice('panel mở');
+    lastOpen = open;
+  };
+  window.addEventListener('resize', detectResize);
+  setInterval(detectResize, 1000);
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch Sử Mua Nick Roblox - Shop Roblox VN</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="../header/header.css" />
+  <style>
+    .spacer-200 { height: 50px; min-height: 50px; }
+
+    .card {
+      background-color: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),
+                  0 4px 6px -4px rgba(0,0,0,0.05);
+    }
+
+    .badge { display:inline-block;padding:0.3em 0.7em;font-size:0.75rem;
+      font-weight:600;border-radius:9999px;color:#fff; }
+    .bg-success{background-color:#2ecc71;}
+    .bg-warning{background-color:#f39c12;}
+    .bg-danger{background-color:#e74c3c;}
+    .bg-secondary{background-color:#95a5a6;}
+
+    .table-row-hover:hover { background-color:#f9fafb; }
+  </style>
+</head>
+
+<body>
+<div class="spacer-200"></div>
+<div id="header-container"></div>
+
+<div id="main-content" class="py-8">
+  <div class="container mx-auto px-4">
+    <main>
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 border-l-4 border-blue-600 pl-3">
+        🎮 Lịch Sử Mua Nick Roblox
+      </h1>
+
+      <div class="card overflow-x-auto p-4 shadow-xl">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên nick</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tài khoản</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mật khẩu</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ghi chú</th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Thời gian</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
+            <tr><td colspan="6" class="text-center py-4 text-gray-500">Đang tải dữ liệu...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="contact-footer"></div>
+
+<script src="../header/header.js"></script>
+
+<script>
+
+function getStatusBadge(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('thành công') || s.includes('completed')) return '<span class="badge bg-success">Thành công</span>';
+  if (s.includes('chờ') || s.includes('pending')) return '<span class="badge bg-warning">Chờ xử lý</span>';
+  if (s.includes('thất bại') || s.includes('failed')) return '<span class="badge bg-danger">Thất bại</span>';
+  return '<span class="badge bg-secondary">Không rõ</span>';
+}
+
+async function fetchNickHistory() {
+  const token = localStorage.getItem("token");
+  const tbody = document.getElementById("historyTableBody");
+
+  if (!token) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Vui lòng đăng nhập để xem lịch sử.</td></tr>`;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/history/order?category=nick`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem("token");
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Phiên đăng nhập đã hết hạn.</td></tr>`;
+      return;
+    }
+
+    const data = await res.json();
+    const list = (data.history || []).filter(h => h.category?.toLowerCase() === 'nick');
+
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">Bạn chưa mua nick nào.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = '';
+    list.forEach(item => {
+      const date = new Date(item.created_at).toLocaleString('vi-VN');
+      const badge = getStatusBadge(item.status);
+
+      const tr = `
+        <tr class="table-row-hover">
+          <td class="px-6 py-3 text-sm font-semibold text-gray-800">${item.name}</td>
+          <td class="px-6 py-3 text-sm text-red-600 font-mono">${item.username || 'Không có'}</td>
+          <td class="px-6 py-3 text-sm text-red-600 font-mono">${item.password || 'Không có'}</td>
+          <td class="px-6 py-3 text-sm text-gray-700">${item.note || 'Không có ghi chú'}</td>
+          <td class="px-6 py-3 text-center">${badge}</td>
+          <td class="px-6 py-3 text-center text-sm text-gray-500">${date}</td>
+        </tr>
+      `;
+      tbody.innerHTML += tr;
+    });
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  showUserHeader();
+  fetchNickHistory();
+});
+</script>
+
+<script>
+  // Tải và chèn footer
+  fetch("../Lien-he.html")
+    .then(res => res.text())
+    .then(html => document.getElementById("contact-footer").innerHTML = html);
+</script>
+
+</body>
+</html>

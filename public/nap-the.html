@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nạp thẻ - Shop Roblox VN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="./header/header.css" /> 
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+
+    <style>
+
+.spacer-200 {
+  /* Chiều cao 200 pixels */
+  height: 50px; 
+  /* Đôi khi dùng "min-height" để đảm bảo khoảng trống không bị mất */
+  min-height: 50px;
+}
+
+
+        .text-primary { color: #FF4747; } /* Màu đỏ chủ đạo */
+        .bg-primary { background-color: #FF4747; }
+        .hover\:bg-primary-dark:hover { background-color: #E03E3E; }
+        .network-button.selected { border-color: #FF4747; background-color: #FFF5F5; }
+        .denom-button.selected { border-color: #FF4747; background-color: #FFF5F5; }
+        /* Style cho menu dropdown */
+        .dropdown-menu {
+            right: 0;
+            top: 100%;
+            z-index: 50;
+        }
+    </style>
+    <style>
+  #floatingBell {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #FFD700;
+    color: white;
+    border-radius: 50%;
+    font-size: 28px;
+    text-align: center;
+    line-height: 60px;
+    cursor: grab;
+    z-index: 9999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease;
+    user-select: none;
+    touch-action: none;
+  }
+
+  #floatingBell:hover {
+    transform: scale(1.1);
+  }
+
+  .notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: red;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: none;
+  }
+
+  /* Hiệu ứng rung chuông */
+  @keyframes ring {
+    0% { transform: rotate(0); }
+    10% { transform: rotate(15deg); }
+    20% { transform: rotate(-10deg); }
+    30% { transform: rotate(8deg); }
+    40% { transform: rotate(-6deg); }
+    50% { transform: rotate(4deg); }
+    60%,100% { transform: rotate(0); }
+  }
+  .ringing {
+    animation: ring 1s ease-in-out;
+  }
+
+  
+</style>
+
+
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#FF4747',
+                        'primary-dark': '#E03E3E',
+                    }
+                }
+            }
+        }
+</script>
+</head>
+<body>
+
+
+<div class="spacer-200"></div>
+
+<div id="floatingBell" title="Thông báo">
+  🔔
+  <div class="notification-dot" id="notifyDot"></div>
+</div>
+
+      <!-- Header -->
+  <div id="header-container"></div>
+  <script src="./header/header.js"></script>
+
+
+
+
+
+    <main class="max-w-4xl mx-auto p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl">
+            <h2 class="text-xl font-bold mb-4">Nạp thẻ tự động 24/7</h2>
+            
+            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-700 text-sm">
+                <p class="font-bold mb-1">Lưu ý:</p>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>Có thể sử dụng Vinaphone, Mobifone, Viettel, Zing, Garena. Hiện tại chúng tôi chưa mở khóa tính năng nạp tiền qua Ngân hàng.</li>
+                    <li>Nạp thẻ sai liên tiếp 3 lần sẽ bị khóa tài khoản.</li>
+                    <li>Vui lòng nạp đúng seri, mã thẻ, mệnh giá, nhà mạng của thẻ cào. Hỗ trợ thẻ cào tại Liên hệ hỗ trợ bên dưới cùng của trang </li>
+                    <li>Hệ thống xử lý thẻ cào thủ công 24/7 thẻ cào sẽ được xử lí ngay và có kết quả đúng nhất.</li>
+                    <li><span class="font-bold">Chú ý: Sai quá 3 lần mất thẻ !</span> vui lòng ghi đúng seri, mã, mệnh giá, nhà mạng nằm trên thẻ cào. </li>
+                </ul>
+            </div>
+
+            <form id="recharge-form" class="space-y-6">
+                
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Nhà mạng (ưu tiên zing, garena)</label>
+                    <div id="network-options" class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                        <button type="button" data-network="zing" class="network-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">Thẻ Zing</button>
+                        <button type="button" data-network="garena" class="network-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">Thẻ Garena</button>
+                        <button type="button" data-network="viettel" class="network-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">Thẻ Viettel</button>
+                        <button type="button" data-network="mobifone" class="network-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">Thẻ Mobifone</button>
+                        <button type="button" data-network="vinaphone" class="network-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">Thẻ Vinaphone</button>
+                    </div>
+                    <input type="hidden" id="network_provider" name="network_provider" required>
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Mệnh giá (Vui lòng chọn đúng)</label>
+                    
+                    <input type="text" id="denomination_display" placeholder="Chọn mệnh giá. Sai mất thẻ!" required 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition mb-4 font-bold text-center text-lg" readonly>
+                    <input type="hidden" id="denomination" name="denomination" required> 
+                    <div id="denomination-options" class="grid grid-cols-4 sm:grid-cols-8 gap-3">
+                        <button type="button" data-denomination="10000" data-display="10.000đ" class="denom-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">10.000đ</button>
+                        <button type="button" data-denomination="20000" data-display="20.000đ" class="denom-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">20.000đ</button>
+                        <button type="button" data-denomination="30000" data-display="30.000đ" class="denom-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">30.000đ</button>
+                        <button type="button" data-denomination="50000" data-display="50.000đ" class="denom-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">50.000đ</button>
+                        <button type="button" data-denomination="100000" data-display="100.000đ" class="denom-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">100.000đ</button>
+                        <button type="button" data-denomination="200000" data-display="200.000đ" class="denom-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">200.000đ</button>
+                        <button type="button" data-denomination="500000" data-display="500.000đ" class="denom-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">500.000đ</button>
+                        <button type="button" data-denomination="1000000" data-display="1.000.000đ" class="denom-button p-3 border-2 border-gray-300 rounded-lg text-center font-medium transition hover:border-primary">1.000.000đ</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="card_serial" class="block text-gray-700 font-semibold mb-2">Seri</label>
+                        <input type="text" id="card_serial" name="card_serial" placeholder="Nhập số seri thẻ" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition">
+                    </div>
+                    <div>
+                        <label for="card_code" class="block text-gray-700 font-semibold mb-2">Mã thẻ</label>
+                        <input type="text" id="card_code" name="card_code" placeholder="Nhập mã thẻ (card code)" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary transition">
+                    </div>
+                </div>
+
+                <button type="submit" id="recharge-submit-btn" class="w-full py-3 bg-primary hover:bg-primary-dark text-white font-bold text-lg rounded-lg transition duration-200">
+                    Nạp Thẻ
+                </button>
+            </form>
+            
+            <div id="message-area" class="mt-4 p-3 rounded-lg hidden"></div>
+        </div>
+    </main>
+
+
+
+<div id="contact-footer"></div>
+
+
+<script>
+
+
+
+let selectedNetwork = null;
+let selectedDenomination = null;
+
+
+
+// Hiển thị thông báo
+function showMessage(type, message) {
+    const msgArea = document.getElementById('message-area');
+    msgArea.classList.remove('hidden', 'bg-red-100', 'bg-green-100', 'text-red-700', 'text-green-700');
+    if (type === 'error') msgArea.classList.add('bg-red-100', 'text-red-700');
+    else if (type === 'success') msgArea.classList.add('bg-green-100', 'text-green-700');
+    msgArea.textContent = message;
+}
+
+// --- Chọn nhà mạng ---
+document.getElementById('network-options')?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('network-button')) {
+        document.querySelectorAll('.network-button').forEach(btn => btn.classList.remove('selected'));
+        e.target.classList.add('selected');
+        selectedNetwork = e.target.dataset.network;
+        document.getElementById('network_provider').value = selectedNetwork;
+    }
+});
+
+// --- Chọn mệnh giá ---
+document.getElementById('denomination-options')?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('denom-button')) {
+        document.querySelectorAll('.denom-button').forEach(btn => btn.classList.remove('selected'));
+        e.target.classList.add('selected');
+        selectedDenomination = e.target.dataset.denomination;
+        document.getElementById('denomination').value = selectedDenomination;
+        document.getElementById('denomination_display').value = e.target.dataset.display;
+    }
+});
+
+// --- Xử lý form nạp thẻ ---
+document.getElementById('recharge-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const user = sessionStorage.getItem('userData');
+    if (!user) {
+        showMessage('error', 'Vui lòng đăng nhập để nạp thẻ.');
+        return;
+    }
+
+    if (!selectedNetwork || !selectedDenomination) {
+        showMessage('error', 'Vui lòng chọn Nhà mạng và Mệnh giá.');
+        return;
+    }
+
+    const card_serial = document.getElementById('card_serial').value.trim();
+    const card_code = document.getElementById('card_code').value.trim();
+    if (!card_serial || !card_code) {
+        showMessage('error', 'Vui lòng nhập Seri và Mã thẻ.');
+        return;
+    }
+
+    const submitBtn = document.getElementById('recharge-submit-btn');
+    submitBtn.textContent = 'Đang xử lý...';
+    submitBtn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_BASE}/recharge`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({
+                network_provider: selectedNetwork,
+                denomination: selectedDenomination,
+                card_serial,
+                card_code,
+                note: `Nạp thẻ cào ${selectedNetwork} mệnh giá ${selectedDenomination}`
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showMessage('success', data.message || 'Thẻ cào đã được gửi, đang chờ xử lý!');
+            document.getElementById('recharge-form').reset();
+            document.querySelectorAll('.network-button.selected, .denom-button.selected').forEach(btn => btn.classList.remove('selected'));
+            updateHeaderBalance(data.newBalance || JSON.parse(user).balance); // lấy dữ liệu từ header.js
+
+        } else {
+            showMessage('error', data.message || 'Thẻ đã được sử dụng hoặc có lỗi trong quá trình nạp thẻ.');
+        }
+    } catch (error) {
+        console.error('Lỗi nạp thẻ:', error);
+        showMessage('error', 'Lỗi kết nối đến máy chủ. Vui lòng thử lại.');
+    } finally {
+        submitBtn.textContent = 'Nạp Thẻ';
+        submitBtn.disabled = false;
+    }
+});
+
+
+
+</script>
+<script src="thong-bao.js"></script>
+<script>
+  // Tải và chèn footer liên hệ
+  fetch("Lien-he.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("contact-footer").innerHTML = html;
+    })
+    .catch(err => console.error("Lỗi khi tải footer:", err));
+</script>
+
+<script>
+(function(){
+  // WHITELIST: nếu user là admin (bạn thay bằng check thật), bỏ qua
+  const isAdmin = !!window.__IS_ADMIN__; // set ở server-render nếu cần
+  if(isAdmin) return;
+
+  // overlay nhẹ nhàng
+  function showNotice(reason) {
+    if(document.getElementById('__devtools_notice')) return;
+    const d = document.createElement('div');
+    d.id = '__devtools_notice';
+    d.style.cssText = [
+      'position:fixed','left:12px','bottom:12px','z-index:2147483647',
+      'background:rgba(0,0,0,0.8)','color:#fff','padding:10px 14px',
+      'border-radius:8px','font-family:Arial,Helvetica,sans-serif','font-size:13px'
+    ].join(';');
+    d.innerHTML = `<strong>Cảnh báo bảo mật</strong><div style="margin-top:6px">Việc mở DevTools/Inspector được phát hiện (${reason}). Nếu bạn không phải là developer, xin đóng DevTools để tiếp tục.</div>`;
+    document.body.appendChild(d);
+    setTimeout(()=> { d.remove && d.remove(); }, 8000);
+  }
+
+  // chặn context menu? (bật/tắt tùy trang)
+  // document.addEventListener('contextmenu', e => e.preventDefault());
+
+  // chặn phím tắt
+  document.addEventListener('keydown', (e) => {
+    const key = e.key?.toLowerCase();
+    if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c')) ||
+        (e.ctrlKey && key === 'u')) {
+      e.preventDefault();
+      showNotice('phím tắt');
+    }
+  });
+
+  // detect bằng resize (răn đe)
+  let lastOpen = false;
+  const detectResize = () => {
+    const open = (window.outerWidth - window.innerWidth > 160) || (window.outerHeight - window.innerHeight > 160);
+    if(open && !lastOpen) showNotice('panel mở');
+    lastOpen = open;
+  };
+  window.addEventListener('resize', detectResize);
+  setInterval(detectResize, 1000);
+})();
+</script>
+
+</body>
+</html>

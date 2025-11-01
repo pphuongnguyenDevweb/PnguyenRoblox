@@ -1,0 +1,120 @@
+/* product.css — CSS cho các box sản phẩm */
+
+/* Toàn khung box */
+.card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Ảnh box */
+.card img {
+  width: 100%;
+  object-fit: cover;
+  border-bottom: 1px solid #ececec;
+}
+
+/* Tên sản phẩm */
+.card h3 {
+  font-size: 1.125rem; /* khoảng 18px */
+  font-weight: 700;
+  color: #333333;
+  margin: 0.75rem 0 0.5rem;
+  text-align: center;
+}
+
+/* Dòng trạng thái */
+.card p {
+  font-size: 0.875rem; /* 14px */
+  color: #666666;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+/* Cho phần “✅ Sẵn sàng” */
+.status-text {
+  color: #22c55e; /* xanh lá cây */
+  font-weight: 600;
+}
+
+/* Nút “Mua” (ảnh trong <a>) */
+.card a {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.2s, border-color 0.2s;
+  overflow: hidden;
+}
+
+.card a:hover {
+  border-color: #f87171; /* đỏ nhạt khi hover */
+}
+
+/* Ảnh nút mua */
+.card a img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Tiêu đề danh mục */
+.category-section h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #e53e3e; /* đỏ đậm */
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Căn các box trong grid */
+.category-section .grid {
+  gap: 1.5rem;
+}
+
+/* Responsive nhỏ hơn màn hình */
+@media (max-width: 640px) {
+  .card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Ví dụ style cho phần bạn chọn gói trong box chi tiết */
+#selected-package {
+  background-color: #f5f5f5;
+  color: #777777;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.75rem;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+}
+
+/* Khi người dùng chọn gói */
+#selected-package.text-black {
+  color: #333333;
+  font-weight: 700;
+  background-color: #ffffff;
+}
+
+/* Hộp hiển thị vật phẩm đã chọn */
+#selected-item-box {
+  background-color: #fee2e2; /* đỏ nhạt nền */
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #b91c1c;
+  text-align: center;
+}

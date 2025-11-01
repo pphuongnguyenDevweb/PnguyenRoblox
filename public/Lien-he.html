@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liên Hệ Hỗ Trợ - QHUYROBLOX.COM</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tải Font Awesome cho icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+    /* Giữ font chữ toàn trang */
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Footer Liên hệ hỗ trợ */
+    footer {
+        background-color: #121212; /* Chỉ phần liên hệ có nền đen */
+        color: white;
+    }
+
+    /* Style cho các nút liên hệ */
+    .contact-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        background-color: transparent; 
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 4px; 
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+        height: 40px;
+        text-decoration: none;
+        width: 100%;
+        max-width: 250px;
+        margin: 0 auto;
+    }
+
+    .contact-button i {
+        margin-right: 8px;
+        font-size: 16px;
+    }
+
+    .contact-button:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: white;
+    }
+
+    .fa-square-facebook {
+        color: white !important;
+    }
+
+    #scrollToTopBtn {
+        background-color: #000;
+        color: #fff;
+    }
+
+    .no-space {
+        white-space: normal;
+    }
+
+    @media (min-width: 768px) {
+        .contact-info-right {
+            align-items: flex-end;
+        }
+        .contact-info-text {
+            text-align: right;
+            max-width: 500px;
+        }
+        .contact-button {
+            width: auto;
+            min-width: 180px;
+        }
+    }
+</style>
+
+</head>
+<body class="bg-[#121212]">
+
+    <!-- KHỐI CHÍNH: LIÊN HỆ HỖ TRỢ (Phần Footer) -->
+    <footer id="footer" class="mb-[60px] md:mb-0">
+        <div class="py-3 bg-[#1b1a1a]">
+            <div class="relative mx-auto mt-2 grid w-full max-w-6xl grid-cols-1 md:grid-cols-2 gap-8 px-4 font-semibold text-white md:mb-0 lg:px-0">
+                
+                <!-- Cột 1: Logo, Slogan (Căn trái) -->
+                <div class="col-span-1 py-2">
+                    <div class="flex flex-col items-start md:items-start">
+                        <!-- Logo (Sử dụng placeholder URL từ snippet của bạn) -->
+                        <a href="https://qhuyroblox.com/home">
+                            <img src=".././images/logoshop1.png" 
+                                alt="Shop Dịch Vụ Roblox Uy Tín , Chất Lượng , Giá Rẻ" 
+                                class="mb-2 max-w-[170px]">
+                        </a>
+                        <!-- Slogan/Mô tả -->
+                        <span class="text-sm font-normal leading-relaxed no-space">
+                            Shop Skins & Acc Game Giao Dịch Tự Động Uy Tín Số 1 Việt Nam.
+                            <br><span class="font-bold">SHOP UY TÍN KHÔNG Á? PHẢI THỬ MỚI BIẾT ĐƯỢC!</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Cột 2: Tiêu đề, Cam kết và Thời gian Hỗ trợ (Căn phải) -->
+                <div class="col-span-1 py-2 flex flex-col items-start contact-info-right md:text-right">
+                    <h5 class="text-xl font-bold uppercase mb-4 text-white">LIÊN HỆ HỖ TRỢ</h5>
+                    
+                    <!-- Khối Cam Kết -->
+                    <div class="text-sm font-normal leading-relaxed contact-info-text md:ml-auto">
+                        <p class="no-space">
+                            Chúng tôi làm việc một cách <span class="font-bold">chuyên nghiệp</span>, <span class="font-bold">uy tín</span>, <span class="font-bold">nhanh chóng</span> và luôn đặt quyền lợi của bạn lên hàng đầu. Với Tiêu chí <span class="font-bold">Khách Hàng Là Trên Hết</span> Shop Chúng Tôi Sẽ Mang Đến Khách Hàng Những <span class="font-bold">Trải Nghiệm Ưng Ý Nhất</span>
+                        </p>
+                        <!-- Thời Gian Hỗ Trợ -->
+                        <p class="font-bold mt-2">
+                            Thời gian hỗ trợ: <span class="font-normal">Sáng: 8h00 -> 11h30 | Chiều: 13h00 -> 19h00</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- CONTACT LINKS SECTION (4 buttons horizontally) -->
+                <div class="col-span-1 md:col-span-2 py-4">
+                    <div class="flex flex-wrap justify-center md:justify-around gap-4 md:gap-6">
+                        
+                        <!-- Link 1: Facebook -->
+                        <a href="https://www.facebook.com/profile.php?id=61577182047106" target="_blank" class="contact-button">
+                            <i class="fa-brands fa-square-facebook"></i> Facebook
+                        </a>
+                        
+                        <!-- Link 3: Email -->
+                        <a href="mailto:phamphuongnguyen633@gmail.com" class="contact-button">
+                            <i class="fa-solid fa-inbox"></i> phamphuongnguyen633@gmail.com
+                        </a>
+                        
+                        <!-- Link 4: Discord -->
+                        <a href="https://discord.gg/GNMHqYa3" target="_blank" class="contact-button">
+                            <i class="fa-brands fa-discord"></i> Discord
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM FOOTER (Phát triển bởi & Phiên bản) -->
+        <div class="bg-[#151212] px-4 sm:px-6 py-3 border-t border-gray-800">
+            <div class="max-w-6xl mx-auto flex justify-between items-center text-gray-400 text-xs">
+                <!-- Trái: Tên Phát triển -->
+                <p class="text-white font-medium">
+                    Phát triển bởi <span class="uppercase">PnguyenRoblox</span>
+                </p>
+                
+                <!-- Phải: Phiên bản -->
+
+            </div>
+        </div>
+
+        
+
+    </footer>
+
+    <script>
+        // JavaScript để xử lý nút "Lên đầu trang" (Scroll to Top)
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+        // Ẩn nút khi chưa cuộn
+        scrollToTopBtn.style.display = "none";
+
+        // Hiển thị nút khi cuộn xuống
+        window.onscroll = function() {
+            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                scrollToTopBtn.style.display = "block";
+            } else {
+                scrollToTopBtn.style.display = "none";
+            }
+        };
+
+        // Khi người dùng click vào nút, cuộn lên đầu trang
+        scrollToTopBtn.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>

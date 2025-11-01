@@ -1,0 +1,159 @@
+<header class="fixed top-0 left-0 w-full bg-white shadow-xl z-50 transition-all duration-300 rounded-b-3xl">
+  <div class="max-w-[1400px] mx-auto px-6 flex justify-between items-center h-20">
+    <!-- Logo -->
+    <a href="index.html" class="flex items-center">
+      <img src="/images/logoshop.png" alt="Logo" class="h-20 w-auto" />
+    </a>
+
+    <!-- Menu Desktop (ẩn trên mobile) -->
+    <nav class="hidden md:flex space-x-6">
+      <a href="/index.html" class="nav-link text-gray-700 hover:text-blue-600 font-medium"><i class="fas fa-home"></i> Trang Chủ</a>
+      <a href="/nap-the.html" class="nav-link text-gray-700 hover:text-blue-600 font-medium"><i class="fas fa-credit-card"></i> Nạp Thẻ</a>
+      <a href="/new.html" class="nav-link text-gray-700 hover:text-blue-600 font-medium"><i class="fas fa-newspaper mr-2"></i> Tin tức Shop</a>
+
+    </nav>
+
+    <!-- User / Login Desktop (ẩn trên mobile) -->
+    <div class="hidden md:flex items-center space-x-3">
+      <a href="/auth.html" id="auth-link" class="btn-login px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+        <i class="fas fa-sign-in-alt"></i> Đăng Nhập / Đăng Ký
+      </a>
+
+      <div id="user-display-box" class="relative hidden">
+        <button id="user-info-button" class="inline-flex items-center rounded-lg text-sm font-medium text-slate-800 focus:outline-none">
+          <div class="h-9 w-9 rounded-full ltr:mr-2">
+            <img id="user-avatar" class="block h-full w-full rounded-full object-cover" src="https://qhuyroblox.com/images/avatar/av-1.svg" alt="user" />
+          </div>
+          <div class="ltr:text-left flex flex-col">
+            <span id="user-name" class="text-sm font-bold text-slate-600"></span>
+            <small id="user-balance" class="text-red-600 block text-[15px] font-bold"></small>
+          </div>
+          <i class="fas fa-chevron-down ml-2 text-sm"></i>
+        </button>
+
+        <div id="user-dropdown" class="absolute right-0 mt-3 w-44 divide-y divide-slate-100 overflow-hidden rounded-md border bg-white shadow-xl hidden z-50">
+          <ul class="py-1 text-sm text-slate-800">
+                        <li class="px-4 py-2 font-bold text-red-600 text-base uppercase">
+            <span>Nạp thẻ</span>
+        </li>
+            <li><a href="/nap-the.html" class="dropdown-link flex items-center px-4 py-2 hover:bg-slate-100"><i class="fas fa-credit-card mr-2"></i><span>Nạp Thẻ</span></a></li>
+
+<li class="px-4 py-2 font-bold text-red-600 text-base uppercase">
+            <span>Lịch sử</span>
+        </li>
+            <li><a href="/history/card-history.html" class="dropdown-link flex items-center px-4 py-2 hover:bg-slate-100"><i class="fas fa-history mr-2"></i><span>Lịch sử Nạp thẻ</span></a></li>
+            <li><a href="/history/product-history.html" class="dropdown-link flex items-center px-4 py-2 hover:bg-slate-100"><i class="fas fa-shopping-cart mr-2"></i><span>Lịch Sử Dịch vụ - Cày thuê</span></a></li>
+            <li><a href="/history/nick-history.html" class="dropdown-link flex items-center px-4 py-2 hover:bg-slate-100"><i class="fas fa-gamepad mr-2"></i><span>Lịch sử Mua Nick</span></a></li>
+            <li><a href="/history/gp-history.html" class="dropdown-link flex items-center px-4 py-2 hover:bg-slate-100"><i class="fas fa-gamepad mr-2"></i><span>Lịch sử Mua GamePass</span></a></li>
+            <li class="px-4 py-2 font-bold text-red-600 text-base uppercase">
+            <span>Tài khoản</span>
+        </li>
+            <li><a href="/account-information.html" class="dropdown-link flex items-center px-4 py-2 hover:bg-slate-100"><i class="fas fa-user mr-2"></i><span>Thông tin tài khoản</span></a></li>
+
+          </ul>
+          <button id="logout-btn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center">
+            <i class="fas fa-sign-out-alt mr-2"></i> <span>Đăng Xuất</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hamburger Button Mobile (chỉ hiện trên mobile) -->
+    <button id="mobile-menu-btn" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none p-2">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile Sidebar Menu -->
+<div id="mobile-sidebar" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-[60] md:hidden overflow-y-auto">
+  <div class="p-6">
+    <!-- Close Button -->
+    <button id="close-sidebar-btn" class="absolute top-6 right-6 text-gray-500 hover:text-gray-700 transition-colors">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+
+    <!-- User Info Mobile -->
+    <div id="mobile-user-section" class="mb-6 pb-6 border-b border-gray-200">
+      <!-- Login Button Mobile -->
+      <a href=".././auth.html" id="mobile-auth-link" class="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+        <i class="fas fa-sign-in-alt mr-2"></i> Đăng Nhập / Đăng Ký
+      </a>
+
+      <!-- User Display Mobile -->
+      <div id="mobile-user-display" class="hidden">
+        <div class="flex items-center mb-4">
+          <img id="mobile-user-avatar" class="h-14 w-14 rounded-full object-cover mr-3 border-2 border-blue-100" src="https://qhuyroblox.com/images/avatar/av-1.svg" alt="user" />
+          <div class="flex-1">
+            <p id="mobile-user-name" class="text-base font-bold text-slate-700 mb-1"></p>
+            <p id="mobile-user-balance" class="text-red-600 text-sm font-semibold flex items-center">
+              <i class="fas fa-wallet mr-1 text-xs"></i>
+              <span>0₫</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu Mobile -->
+    <nav class="space-y-1">
+      <a href="/index.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors font-medium">
+        <i class="fas fa-home w-6 text-lg"></i>
+        <span class="ml-3">Trang Chủ</span>
+      </a>
+      <a href="/nap-the.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors font-medium">
+        <i class="fas fa-credit-card w-6 text-lg"></i>
+        <span class="ml-3">Nạp Thẻ</span>
+      </a>
+
+      <!-- User Menu Items (Ẩn khi chưa đăng nhập) -->
+      <div id="mobile-user-menu" class="hidden space-y-1 mt-4 pt-4 border-t border-gray-200">
+        <p class="px-4 text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">Lịch sử</p>
+        
+        <a href="/history/card-history.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
+          <i class="fas fa-history w-6 text-lg"></i>
+          <span class="ml-3 text-sm">Lịch sử Nạp thẻ</span>
+        </a>
+        
+        <a href="/history/product-history.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
+          <i class="fas fa-shopping-cart w-6 text-lg"></i>
+          <span class="ml-3 text-sm">Lịch Sử Dịch vụ</span>
+        </a>
+        <a href="/history/nick-history.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
+          <i class="fas fa-gamepad w-6 text-lg"></i>
+          <span class="ml-3 text-sm">Lịch sử Mua Nick</span>
+        </a>
+        <a href="/history/gp-history.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
+          <i class="fas fa-trophy w-6 text-lg"></i>
+          <span class="ml-3 text-sm">Lịch sử Mua GamePass</span>
+        </a>
+        <a href="/history/spin-history.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
+          <i class="fas fa-sync-alt w-6 text-lg"></i>
+          <span class="ml-3 text-sm">Lịch sử Quay vòng quay</span>
+        </a>
+          <p class="px-4 text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">Tài khoản</p>
+        <a href="/account-information.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
+          <i class="fas fa-user-circle w-6 text-lg"></i>
+          <span class="ml-3 text-sm">Thông tin tài khoản</span>
+        </a>
+        <a href="/new.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors">
+          <i class="fas fa-newspaper w-6 text-lg"></i>
+          <span class="ml-3 text-sm">Tin tức Shop</span>
+        </a>
+
+        <!-- Logout Button Mobile -->
+        <button id="mobile-logout-btn" class="w-full flex items-center px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors mt-4 font-medium">
+          <i class="fas fa-sign-out-alt w-6 text-lg"></i>
+          <span class="ml-3">Đăng Xuất</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Overlay (Lớp phủ tối khi mở menu mobile) -->
+<div id="mobile-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[55] hidden md:hidden transition-opacity duration-300"></div>

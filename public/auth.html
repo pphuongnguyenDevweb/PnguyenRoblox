@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập & Đăng ký - Shop Roblox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md">
+        <div id="message-box" class="hidden text-center p-3 rounded-md mb-4"></div>
+        <div id="form-container"></div>
+    </div>
+
+    <script>
+        const formContainer = document.getElementById('form-container');
+        const messageBox = document.getElementById('message-box');
+        const API_BASE_URL = 'https://humoral-antonina-denudative.ngrok-free.dev/api/auth'; // 🔥 đổi URL backend nếu cần
+
+        // =============================
+        // HIỂN THỊ THÔNG BÁO
+        // =============================
+        function showMessage(message, type = 'error') {
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-100', 'text-green-700');
+            } else {
+                messageBox.classList.add('bg-red-100', 'text-red-700');
+            }
+            setTimeout(() => messageBox.classList.add('hidden'), 5000);
+        }
+
+        // =============================
+        // GỬI FORM AUTH (LOGIN/REGISTER)
+        // =============================
+        async function handleAuthSubmit(e, endpoint) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.textContent = 'Đang xử lý...';
+            submitButton.disabled = true;
+
+try {
+  const payload =
+    endpoint === "/register"
+      ? {
+          display_name: data.display_name,
+          email: data.email,
+          password: data.password,
+        }
+      : {
+          name: data.name,
+          password: data.password,
+        };
+
+  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  console.log("📤 Dữ liệu gửi lên endpoint:", endpoint, data);
+
+
+
+                const responseData = await res.json();
+
+                if (!res.ok) throw new Error(responseData.error || 'Lỗi xử lý không xác định.');
+
+if (endpoint === '/login') {
+    // --- Khi người dùng đăng nhập ---
+    localStorage.setItem('token', responseData.token);
+    localStorage.setItem('user', JSON.stringify(responseData.user)); // ✅ lưu user
+    showMessage('Đăng nhập thành công! Đang chuyển hướng...', 'success');
+
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 1500);
+
+} else {
+    // --- Khi người dùng đăng ký ---
+    showMessage('Đăng ký thành công! Đang tự động đăng nhập...', 'success');
+
+    try {
+        const loginRes = await fetch(`${API_BASE_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: data.display_name,   // ✅ backend dùng "name"
+                password: data.password,   // ✅ mật khẩu vừa đăng ký
+            }),
+        });
+
+        const loginData = await loginRes.json();
+
+        if (!loginRes.ok || !loginData.token) {
+            throw new Error(loginData.message || 'Đăng nhập tự động thất bại.');
+        }
+
+        // ✅ Lưu token + user
+        localStorage.setItem('token', loginData.token);
+        localStorage.setItem('user', JSON.stringify(loginData.user));
+
+        showMessage('Đăng nhập thành công! Đang chuyển hướng...', 'success');
+
+        // ✅ Quay về trang chủ (hiển thị thanh user luôn)
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1500);
+
+    } catch (autoErr) {
+        console.error('❌ Lỗi khi đăng nhập tự động:', autoErr.message);
+        showMessage('Đăng ký thành công, nhưng không thể đăng nhập tự động. Vui lòng đăng nhập thủ công.', 'error');
+        setTimeout(() => {
+            renderLogin();
+        }, 1500);
+    }
+}
+
+
+
+
+            } catch (err) {
+                showMessage(`Lỗi: ${err.message}. Kiểm tra Server Backend.`, 'error');
+            } finally {
+                submitButton.textContent = endpoint === '/login' ? 'Đăng Nhập' : 'Đăng Ký Ngay';
+                submitButton.disabled = false;
+            }
+        }
+
+        // =============================
+        // GIAO DIỆN LOGIN
+        // =============================
+        function renderLogin() {
+            messageBox.classList.add('hidden');
+            formContainer.innerHTML = `
+                <header class="mb-6 text-center">
+                    <h1 class="text-3xl font-extrabold text-gray-900">Đăng Nhập</h1>
+                    <p class="text-gray-500 mt-2 text-md">Sử dụng tài khoản của bạn</p>
+                </header>
+
+                <form id="loginForm" class="space-y-5">
+                    <div>
+                        <label for="login-name" class="block text-base font-semibold text-gray-700 mb-2">Tên Tài Khoản</label>
+                        <input type="text" id="login-name" name="name" required placeholder="Nhập tên tài khoản"
+                            class="w-full px-4 py-3 rounded-md bg-gray-50 border border-gray-300 focus:ring focus:ring-indigo-200 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="login-password" class="block text-base font-semibold text-gray-700 mb-2">Mật Khẩu</label>
+                        <input type="password" id="login-password" name="password" required placeholder="Nhập mật khẩu của bạn"
+                            class="w-full px-4 py-3 rounded-md bg-gray-50 border border-gray-300 focus:ring focus:ring-indigo-200 focus:border-indigo-500">
+                    </div>
+
+                    <button type="submit"
+                            class="w-full py-3 px-4 rounded-md text-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition duration-200">
+                        Đăng Nhập
+                    </button>
+                </form>
+
+                <p class="text-center text-gray-500 mt-6 text-sm">
+                    Chưa có tài khoản?
+                </p>
+                <div class="mt-2 text-center">
+                    <a href="#" id="switch-to-register" class="text-indigo-600 font-semibold hover:underline">Đăng ký ngay</a>
+                </div>
+            `;
+
+            document.getElementById('loginForm').addEventListener('submit', (e) => handleAuthSubmit(e, '/login'));
+            document.getElementById('switch-to-register').addEventListener('click', (e) => {
+                e.preventDefault();
+                renderRegister();
+            });
+        }
+
+        // =============================
+        // GIAO DIỆN REGISTER
+        // =============================
+        function renderRegister() {
+            messageBox.classList.add('hidden');
+            formContainer.innerHTML = `
+                <header class="mb-6 text-center">
+                    <h1 class="text-3xl font-extrabold text-gray-900">Đăng Ký</h1>
+                    <p class="text-gray-500 mt-2 text-md">Tạo tài khoản mới</p>
+                </header>
+
+                <form id="registerForm" class="space-y-5">
+                    <div>
+                        <label for="register-name" class="block text-base font-semibold text-gray-700 mb-2">Tên Tài Khoản</label>
+                        <input type="text" id="register-name" name="display_name" required placeholder="Nhập tên tài khoản"
+                            class="w-full px-4 py-3 rounded-md bg-gray-50 border border-gray-300 focus:ring focus:ring-indigo-200 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="register-email" class="block text-base font-semibold text-gray-700 mb-2">Email</label>
+                        <input type="email" id="register-email" name="email" required placeholder="Nhập địa chỉ email"
+                            class="w-full px-4 py-3 rounded-md bg-gray-50 border border-gray-300 focus:ring focus:ring-indigo-200 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="register-password" class="block text-base font-semibold text-gray-700 mb-2">Mật Khẩu</label>
+                        <input type="password" id="register-password" name="password" required minlength="6" placeholder="Nhập mật khẩu"
+                            class="w-full px-4 py-3 rounded-md bg-gray-50 border border-gray-300 focus:ring focus:ring-indigo-200 focus:border-indigo-500">
+                    </div>
+
+                    <button type="submit"
+                            class="w-full py-3 px-4 rounded-md text-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition duration-200">
+                        Đăng Ký Ngay
+                    </button>
+                </form>
+
+                <p class="text-center text-gray-500 mt-6 text-sm">
+                    Đã có tài khoản?
+                </p>
+                <div class="mt-2 text-center">
+                    <a href="#" id="switch-to-login" class="text-indigo-600 font-semibold hover:underline">Đăng nhập ngay</a>
+                </div>
+            `;
+
+            document.getElementById('registerForm').addEventListener('submit', (e) => handleAuthSubmit(e, '/register'));
+            document.getElementById('switch-to-login').addEventListener('click', (e) => {
+                e.preventDefault();
+                renderLogin();
+            });
+        }
+
+        // Mặc định hiển thị form Đăng nhập
+        document.addEventListener('DOMContentLoaded', renderLogin);
+    </script>
+
+
+</body>
+</html>

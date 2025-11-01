@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Tài Khoản - Shop Roblox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <link rel="stylesheet" href="./header/header.css" />
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+        <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        .spacer-200 { height: 50px; min-height: 50px; }
+        
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(221, 221, 221, 0.3);
+            background-clip: padding-box;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 18px 0;
+            border-bottom: 1px solid rgba(221, 221, 221, 0.5);
+        }
+        
+        .info-row:last-child { border-bottom: none; }
+        
+        .info-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+        
+        .info-value {
+            color: #666;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .password-hidden { letter-spacing: 4px; }
+        
+        .toggle-password {
+            cursor: pointer;
+            color: #000000;
+            transition: all 0.2s;
+        }
+        
+        .toggle-password:hover { color: #d81d1d; }
+        
+        .forgot-password-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #000000 0%, #000000 100%);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+            gap: 8px;
+        }
+        
+        .forgot-password-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .change-password-section {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(221, 221, 221, 0.3);
+        }
+        
+        .change-password-section.show { 
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .input-group {
+            margin-bottom: 24px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background-color: #f8fafc;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #000000;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background-color: white;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #000000 0%, #000000 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error-text {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .error-text.show { display: block; }
+        
+        .gmail-recovery-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ea4335 0%, #d92519 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: none;
+            transition: all 0.3s ease;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .gmail-recovery-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(234, 67, 53, 0.3);
+        }
+        
+        .gmail-recovery-btn.show { display: flex; }
+
+        .currency-value {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            color: #04f600;
+        }
+
+        .section-title {
+            position: relative;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #000000 0%, #000000 100%);
+            border-radius: 3px;
+        }
+
+        .account-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000000;
+        }
+    </style>
+    <style>
+  #floatingBell {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #FFD700;
+    color: white;
+    border-radius: 50%;
+    font-size: 28px;
+    text-align: center;
+    line-height: 60px;
+    cursor: grab;
+    z-index: 9999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease;
+    user-select: none;
+    touch-action: none;
+  }
+
+  #floatingBell:hover {
+    transform: scale(1.1);
+  }
+
+  .notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: red;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: none;
+  }
+
+  /* Hiệu ứng rung chuông */
+  @keyframes ring {
+    0% { transform: rotate(0); }
+    10% { transform: rotate(15deg); }
+    20% { transform: rotate(-10deg); }
+    30% { transform: rotate(8deg); }
+    40% { transform: rotate(-6deg); }
+    50% { transform: rotate(4deg); }
+    60%,100% { transform: rotate(0); }
+  }
+  .ringing {
+    animation: ring 1s ease-in-out;
+  }
+
+  
+</style>
+
+</head>
+<body class="bg-gray-50">
+    <div class="spacer-200"></div>
+    <div id="header-container"></div>
+    <div id="floatingBell" title="Thông báo">
+  🔔
+  <div class="notification-dot" id="notifyDot"></div>
+</div>
+
+    <main class="max-w-4xl mx-auto p-4 sm:p-6">
+        <!-- THÔNG TIN TÀI KHOẢN -->
+        <div class="info-card">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 section-title flex items-center gap-3">
+                <div class="account-icon">
+                    <i data-feather="user"></i>
+                </div>
+                Thông Tin Tài Khoản
+            </h2>
+            
+            <div class="info-row">
+                <span class="info-label">Tên Đăng Nhập</span>
+                <span class="info-value" id="display-username">Đang tải...</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Địa Chỉ E-Mail</span>
+                <span class="info-value" id="display-email">Đang tải...</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Ngày Đăng Ký</span>
+                <span class="info-value" id="display-register-date">Đang tải...</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Ngày Cập Nhật</span>
+                <span class="info-value" id="display-update-date">Đang tải...</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Số Tiền Hiện Có</span>
+                <span class="info-value"><span class="currency-value" id="display-balance">₫0</span></span>
+            </div>
+            
+
+            
+            <a class="forgot-password-link" id="toggle-change-password">
+                <i data-feather="key"></i>
+                <span>Bạn muốn đổi mật khẩu? Đổi mật khẩu ngay</span>
+            </a>
+        </div>
+
+        <!-- ĐỔI MẬT KHẨU -->
+        <div class="change-password-section" id="change-password-section">
+            <h3 class="text-xl font-bold text-gray-800 mb-6 section-title flex items-center gap-3">
+                <div class="account-icon">
+                    <i data-feather="lock"></i>
+                </div>
+                Thay Đổi Mật Khẩu
+            </h3>
+            
+            <form id="change-password-form">
+                <div class="input-group">
+                    <label for="old-password">Mật Khẩu Cũ</label>
+                    <div class="relative">
+                        <input type="password" id="old-password" placeholder="Nhập mật khẩu cũ" required class="pr-10">
+                        <i data-feather="eye" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 toggle-password" data-target="old-password"></i>
+                    </div>
+                    <p class="error-text" id="error-old-password">Mật khẩu cũ không đúng!</p>
+                </div>
+                
+                <div class="input-group">
+                    <label for="new-password">Mật Khẩu Mới</label>
+                    <div class="relative">
+                        <input type="password" id="new-password" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)" required minlength="6" class="pr-10">
+                        <i data-feather="eye" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 toggle-password" data-target="new-password"></i>
+                    </div>
+                    <p class="error-text" id="error-new-password">Mật khẩu mới phải có ít nhất 6 ký tự!</p>
+                </div>
+                
+                <div class="input-group">
+                    <label for="confirm-password">Xác Nhận Mật Khẩu Mới</label>
+                    <div class="relative">
+                        <input type="password" id="confirm-password" placeholder="Nhập lại mật khẩu mới" required class="pr-10">
+                        <i data-feather="eye" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 toggle-password" data-target="confirm-password"></i>
+                    </div>
+                    <p class="error-text" id="error-confirm-password">Mật khẩu xác nhận không khớp!</p>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="submit-change-password">
+                    <i data-feather="refresh-cw"></i>
+                    <span>Đổi Mật Khẩu</span>
+                </button>
+                
+                <button type="button" class="gmail-recovery-btn" id="gmail-recovery-btn">
+                    <i data-feather="mail"></i>
+                    <span>Bạn quên mật khẩu? Sử dụng Gmail để cấp mật khẩu ngay</span>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <div id="contact-footer"></div>
+
+    <script src="./header/header.js"></script>
+    <script>
+
+        // ========================================
+        // LOAD THÔNG TIN TÀI KHOẢN
+        // ========================================
+        async function loadAccountInfo() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                Notification.loginRequired();
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/user/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    const user = data.user;
+                    
+                    document.getElementById('display-username').textContent = user.username || user.display_name || 'N/A';
+                    document.getElementById('display-email').textContent = user.email || 'Chưa cập nhật';
+                    document.getElementById('display-balance').textContent = `₫${(user.balance || 0).toLocaleString()}`;
+                    
+                    // Format dates
+                    const registerDate = user.created_at ? new Date(user.created_at).toLocaleString('vi-VN') : 'N/A';
+                    const updateDate = user.updated_at ? new Date(user.updated_at).toLocaleString('vi-VN') : 'N/A';
+                    
+                    document.getElementById('display-register-date').textContent = registerDate;
+                    document.getElementById('display-update-date').textContent = updateDate;
+                    
+                } else {
+                    throw new Error(data.error || 'Không thể tải thông tin tài khoản');
+                }
+
+            } catch (error) {
+                console.error('Load account error:', error);
+
+            }
+        }
+
+        // ========================================
+        // TOGGLE SECTION ĐỔI MẬT KHẨU
+        // ========================================
+        document.getElementById('toggle-change-password').addEventListener('click', function(e) {
+            e.preventDefault();
+            const section = document.getElementById('change-password-section');
+            section.classList.toggle('show');
+            
+            // Scroll to section
+            if (section.classList.contains('show')) {
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+        });
+
+        // ========================================
+        // XỬ LÝ ĐỔI MẬT KHẨU
+        // ========================================
+        document.getElementById('change-password-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Reset errors
+            document.querySelectorAll('.error-text').forEach(el => el.classList.remove('show'));
+            document.getElementById('gmail-recovery-btn').classList.remove('show');
+
+            const oldPassword = document.getElementById('old-password').value.trim();
+            const newPassword = document.getElementById('new-password').value.trim();
+            const confirmPassword = document.getElementById('confirm-password').value.trim();
+
+            // Validate
+            if (newPassword.length < 6) {
+                document.getElementById('error-new-password').classList.add('show');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                document.getElementById('error-confirm-password').classList.add('show');
+                return;
+            }
+
+            // Disable button
+            const submitBtn = document.getElementById('submit-change-password');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-feather="loader" class="animate-spin"></i><span>Đang xử lý...</span>';
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_BASE}/user/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        old_password: oldPassword,
+                        new_password: newPassword
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    alert('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
+                    
+                    // Clear form
+                    document.getElementById('change-password-form').reset();
+                    document.getElementById('change-password-section').classList.remove('show');
+                    
+                    // Logout after 2s
+                    setTimeout(() => {
+                        localStorage.removeItem('token');
+                        window.location.href = '/auth.html';
+                    }, 2000);
+
+                } else {
+                    // Mật khẩu cũ sai
+                    document.getElementById('error-old-password').classList.add('show');
+                    document.getElementById('gmail-recovery-btn').classList.add('show');
+                    alert(data.error || 'Mật khẩu cũ không đúng!');
+                }
+
+            } catch (error) {
+                console.error('Change password error:', error);
+                
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-feather="refresh-cw"></i><span>Đổi Mật Khẩu</span>';
+            }
+        });
+
+        // ========================================
+        // TOGGLE PASSWORD VISIBILITY
+        // ========================================
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('toggle-password')) {
+                const targetId = e.target.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                const icon = e.target;
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.setAttribute('data-feather', 'eye-off');
+                } else {
+                    input.type = 'password';
+                    icon.setAttribute('data-feather', 'eye');
+                }
+                feather.replace();
+            }
+        });
+
+        // ========================================
+        // RECOVERY VIA GMAIL
+        // ========================================
+        document.getElementById('gmail-recovery-btn').addEventListener('click', function() {
+            window.location.href = '/password.html';
+        });
+
+        // ========================================
+        // INIT
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+            loadAccountInfo();
+        });
+    </script>
+
+    <script>
+  // Tải và chèn footer liên hệ
+  fetch("Lien-he.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("contact-footer").innerHTML = html;
+    })
+    .catch(err => console.error("Lỗi khi tải footer:", err));
+</script>
+
+<script>
+(function(){
+  // WHITELIST: nếu user là admin (bạn thay bằng check thật), bỏ qua
+  const isAdmin = !!window.__IS_ADMIN__; // set ở server-render nếu cần
+  if(isAdmin) return;
+
+  // overlay nhẹ nhàng
+  function showNotice(reason) {
+    if(document.getElementById('__devtools_notice')) return;
+    const d = document.createElement('div');
+    d.id = '__devtools_notice';
+    d.style.cssText = [
+      'position:fixed','left:12px','bottom:12px','z-index:2147483647',
+      'background:rgba(0,0,0,0.8)','color:#fff','padding:10px 14px',
+      'border-radius:8px','font-family:Arial,Helvetica,sans-serif','font-size:13px'
+    ].join(';');
+    d.innerHTML = `<strong>Cảnh báo bảo mật</strong><div style="margin-top:6px">Việc mở DevTools/Inspector được phát hiện (${reason}). Nếu bạn không phải là developer, xin đóng DevTools để tiếp tục.</div>`;
+    document.body.appendChild(d);
+    setTimeout(()=> { d.remove && d.remove(); }, 8000);
+  }
+
+  // chặn context menu? (bật/tắt tùy trang)
+  // document.addEventListener('contextmenu', e => e.preventDefault());
+
+  // chặn phím tắt
+  document.addEventListener('keydown', (e) => {
+    const key = e.key?.toLowerCase();
+    if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c')) ||
+        (e.ctrlKey && key === 'u')) {
+      e.preventDefault();
+      showNotice('phím tắt');
+    }
+  });
+
+  // detect bằng resize (răn đe)
+  let lastOpen = false;
+  const detectResize = () => {
+    const open = (window.outerWidth - window.innerWidth > 160) || (window.outerHeight - window.innerHeight > 160);
+    if(open && !lastOpen) showNotice('panel mở');
+    lastOpen = open;
+  };
+  window.addEventListener('resize', detectResize);
+  setInterval(detectResize, 1000);
+})();
+</script>
+<script src="thong-bao.js"></script>
+</body>
+</html>

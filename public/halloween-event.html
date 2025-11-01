@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Halloween Puzzle Game</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body { 
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d1b00 100%); 
+    color: #fff; 
+    font-family: 'Segoe UI', sans-serif; 
+    margin: 0; 
+    padding: 0; 
+    min-height: 100vh;
+}
+.container { 
+    max-width: 800px; 
+    margin: 40px auto; 
+    background: linear-gradient(135deg, #2b2b2b 0%, #1a1a1a 100%);
+    padding: 30px; 
+    border-radius: 16px; 
+    box-shadow: 0 8px 32px rgba(255, 140, 0, 0.3);
+    border: 2px solid rgba(255, 140, 0, 0.2);
+}
+h1 { 
+    text-align: center; 
+    font-size: 2.5rem; 
+    margin-bottom: 20px; 
+    color: #ff8c00;
+    text-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes glow {
+    from { text-shadow: 0 0 10px rgba(255, 140, 0, 0.5); }
+    to { text-shadow: 0 0 25px rgba(255, 140, 0, 0.8), 0 0 35px rgba(255, 140, 0, 0.5); }
+}
+#progressBar { 
+    background: #555; 
+    border-radius: 10px; 
+    overflow: hidden; 
+    height: 25px; 
+    margin-bottom: 20px;
+    border: 2px solid #777;
+}
+#progressFill { 
+    background: linear-gradient(90deg, #ff8c00, #ff6b00); 
+    height: 100%; 
+    width: 0%; 
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(255, 140, 0, 0.6);
+}
+.levelInfo {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #ffa500;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+.shuffleContainer { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 10px; 
+    margin: 25px 0; 
+    justify-content: center;
+    min-height: 60px;
+}
+.shuffleChar { 
+    width: 50px; 
+    height: 50px; 
+    background: linear-gradient(135deg, #ffb347, #ff8c00);
+    color: #000; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    font-size: 1.3rem;
+    cursor: grab; 
+    user-select: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.shuffleChar:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 15px rgba(255, 140, 0, 0.5);
+}
+.shuffleChar:active {
+    cursor: grabbing;
+}
+.answerContainer { 
+    display: flex; 
+    gap: 8px; 
+    justify-content: center; 
+    flex-wrap: wrap; 
+    margin-bottom: 25px;
+    min-height: 60px;
+}
+.answerSlot { 
+    width: 50px; 
+    height: 50px; 
+    background: #444; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 8px; 
+    font-weight: bold;
+    font-size: 1.3rem;
+    border: 2px dashed #666;
+    transition: all 0.3s;
+}
+.answerSlot.filled {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    border: 2px solid #4CAF50;
+    color: #fff;
+}
+.answerSlot.dragover {
+    background: #666;
+    border-color: #ff8c00;
+    transform: scale(1.1);
+}
+#hint { 
+    text-align: center; 
+    margin-bottom: 20px; 
+    color: #ffd700;
+    font-size: 1.3rem;
+    font-weight: 600;
+    padding: 15px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+#timer { 
+    text-align: center; 
+    margin-bottom: 25px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #ff6b6b;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+#rewardBtn { 
+    display: none; 
+    margin: 20px auto; 
+    padding: 15px 40px; 
+    background: linear-gradient(135deg, #ff8c00, #ff6b00);
+    color: #000; 
+    font-weight: bold; 
+    border: none; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    font-size: 1.4rem;
+    box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
+    transition: all 0.3s;
+}
+#rewardBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 140, 0, 0.6);
+}
+#rewardBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.message {
+    text-align: center;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 10px;
+    font-weight: 600;
+}
+.message.success {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+.message.error {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+    border: 1px solid #f44336;
+}
+.message.info {
+    background: rgba(33, 150, 243, 0.2);
+    color: #2196F3;
+    border: 1px solid #2196F3;
+}
+.controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.btn-secondary {
+    background: #555;
+    color: #fff;
+}
+.btn-secondary:hover {
+    background: #666;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎃 Halloween Puzzle Game</h1>
+    <div id="progressBar"><div id="progressFill"></div></div>
+    <div class="levelInfo" id="levelInfo"></div>
+    <div id="hint"></div>
+    <div id="timer"></div>
+    <div id="message" class="message" style="display:none;"></div>
+    <div class="answerContainer" id="answerContainer"></div>
+    <div class="shuffleContainer" id="shuffleContainer"></div>
+    <div class="controls">
+        <button class="btn btn-secondary" id="resetBtn" style="display:none;">🔄 Làm lại level</button>
+    </div>
+    <button id="rewardBtn">🎁 Nhận Phần Thưởng</button>
+</div>
+
+<script>
+const levels = [
+    { code: 'HALLOWEEN', hint: '🎃 Tên của lễ hội kinh dị vào ngày 31/10' },
+    { code: 'PUMPKIN', hint: '🎃 Loại quả được khắc mặt quỷ trong Halloween' },
+    { code: 'GHOST', hint: '👻 Con ma tiếng Anh là gì?' },
+    { code: 'WITCH', hint: '🧙‍♀️ Phù thủy bay trên chổi tiếng Anh' },
+    { code: 'CANDY', hint: '🍬 Trẻ em xin gì khi chơi trick or treat?' }
+];
+
+let currentLevel = 0;
+let timeLeft = 600;
+let dragged = null;
+let timerInterval = null;
+const API_BASE = '/api/halloween';
+
+// Elements
+const progressFill = document.getElementById('progressFill');
+const levelInfo = document.getElementById('levelInfo');
+const hintEl = document.getElementById('hint');
+const answerContainer = document.getElementById('answerContainer');
+const shuffleContainer = document.getElementById('shuffleContainer');
+const timerEl = document.getElementById('timer');
+const messageEl = document.getElementById('message');
+const rewardBtn = document.getElementById('rewardBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+// Utility functions
+function shuffleString(str) { 
+    return str.split('').sort(() => Math.random() - 0.5).join(''); 
+}
+
+function showMessage(text, type = 'info') {
+    messageEl.textContent = text;
+    messageEl.className = `message ${type}`;
+    messageEl.style.display = 'block';
+    setTimeout(() => {
+        messageEl.style.display = 'none';
+    }, 3000);
+}
+
+function updateProgress() {
+    const progress = (currentLevel / levels.length) * 100;
+    progressFill.style.width = progress + '%';
+    levelInfo.textContent = `Level ${currentLevel + 1} / ${levels.length}`;
+}
+
+function renderLevel() {
+    if (currentLevel >= levels.length) {
+        completeGame();
+        return;
+    }
+
+    const level = levels[currentLevel];
+    hintEl.textContent = level.hint;
+    updateProgress();
+
+    // Render answer slots
+    answerContainer.innerHTML = '';
+    for (let i = 0; i < level.code.length; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'answerSlot';
+        slot.dataset.index = i;
+        answerContainer.appendChild(slot);
+    }
+
+    // Render shuffled characters
+    shuffleContainer.innerHTML = '';
+    let shuffled = shuffleString(level.code);
+    shuffled.split('').forEach(ch => {
+        const div = document.createElement('div');
+        div.className = 'shuffleChar';
+        div.textContent = ch;
+        div.draggable = true;
+        div.addEventListener('dragstart', e => { 
+            dragged = e.target;
+            e.target.style.opacity = '0.5';
+        });
+        div.addEventListener('dragend', e => {
+            e.target.style.opacity = '1';
+        });
+        shuffleContainer.appendChild(div);
+    });
+
+    resetBtn.style.display = 'inline-block';
+}
+
+// Drag and drop handlers
+answerContainer.addEventListener('dragover', e => {
+    e.preventDefault();
+    const target = e.target.closest('.answerSlot');
+    if (target) {
+        target.classList.add('dragover');
+    }
+});
+
+answerContainer.addEventListener('dragleave', e => {
+    const target = e.target.closest('.answerSlot');
+    if (target) {
+        target.classList.remove('dragover');
+    }
+});
+
+answerContainer.addEventListener('drop', e => {
+    e.preventDefault();
+    if (!dragged) return;
+    
+    const target = e.target.closest('.answerSlot');
+    if (!target) return;
+    
+    target.classList.remove('dragover');
+    
+    // Return old character to shuffle area
+    if (target.textContent) {
+        const oldChar = document.createElement('div');
+        oldChar.className = 'shuffleChar';
+        oldChar.textContent = target.textContent;
+        oldChar.draggable = true;
+        oldChar.addEventListener('dragstart', e => { 
+            dragged = e.target;
+            e.target.style.opacity = '0.5';
+        });
+        oldChar.addEventListener('dragend', e => {
+            e.target.style.opacity = '1';
+        });
+        shuffleContainer.appendChild(oldChar);
+    }
+    
+    target.textContent = dragged.textContent;
+    target.classList.add('filled');
+    dragged.remove();
+    dragged = null;
+    
+    checkLevelComplete();
+});
+
+async function checkLevelComplete() {
+    const slots = answerContainer.querySelectorAll('.answerSlot');
+    const levelCode = levels[currentLevel].code.split('');
+    let correct = true;
+    
+    for (let i = 0; i < slots.length; i++) {
+        if (slots[i].textContent !== levelCode[i]) {
+            correct = false;
+            break;
+        }
+    }
+    
+    if (correct) {
+        showMessage('🎉 Chính xác! Tiến sang level tiếp theo...', 'success');
+        
+        // Save progress to backend
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                await fetch(`${API_BASE}/complete-level`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ level: currentLevel + 1 })
+                });
+            }
+        } catch (e) {
+            console.error('Error saving progress:', e);
+        }
+        
+        setTimeout(() => {
+            currentLevel++;
+            renderLevel();
+        }, 1500);
+    }
+}
+
+function completeGame() {
+    hintEl.textContent = '🎊 Chúc mừng! Bạn đã hoàn thành tất cả các level!';
+    answerContainer.innerHTML = '';
+    shuffleContainer.innerHTML = '';
+    rewardBtn.style.display = 'block';
+    resetBtn.style.display = 'none';
+    progressFill.style.width = '100%';
+    levelInfo.textContent = 'Hoàn thành!';
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+}
+
+// Timer
+function startTimer() {
+    timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerEl.textContent = '⏰ Hết thời gian!';
+            showMessage('Thời gian đã hết! Vui lòng làm lại.', 'error');
+            answerContainer.querySelectorAll('.answerSlot').forEach(s => {
+                s.textContent = '';
+                s.classList.remove('filled');
+            });
+            shuffleContainer.innerHTML = '';
+            return;
+        }
+        
+        let min = Math.floor(timeLeft / 60);
+        let sec = timeLeft % 60;
+        timerEl.textContent = `⏱️ Thời gian: ${min}:${sec < 10 ? '0' + sec : sec}`;
+        timeLeft--;
+    }, 1000);
+}
+
+// Reset level
+resetBtn.addEventListener('click', () => {
+    renderLevel();
+    showMessage('Đã làm mới level hiện tại', 'info');
+});
+
+// Reward button
+rewardBtn.addEventListener('click', async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        showMessage('⚠️ Bạn cần đăng nhập để nhận thưởng', 'error');
+        return;
+    }
+
+    rewardBtn.disabled = true;
+    showMessage('Đang xử lý...', 'info');
+
+    try {
+        const res = await fetch(`${API_BASE}/reward`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            showMessage(`🎉 Hoàn thành! Bạn nhận được ${data.amount.toLocaleString()}đ`, 'success');
+            rewardBtn.textContent = '✅ Đã nhận thưởng';
+        } else {
+            showMessage(`❌ ${data.error}`, 'error');
+            rewardBtn.disabled = false;
+        }
+    } catch (e) {
+        console.error(e);
+        showMessage('❌ Lỗi kết nối server', 'error');
+        rewardBtn.disabled = false;
+    }
+});
+
+// Initialize game
+async function initGame() {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        showMessage('⚠️ Vui lòng đăng nhập để chơi', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/status`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        
+        if (data.rewardClaimed) {
+            hintEl.textContent = '✅ Bạn đã hoàn thành và nhận thưởng rồi!';
+            answerContainer.innerHTML = '';
+            shuffleContainer.innerHTML = '';
+            progressFill.style.width = '100%';
+            levelInfo.textContent = 'Đã hoàn thành';
+            timerEl.textContent = '🎉 Cảm ơn bạn đã tham gia!';
+            return;
+        }
+        
+        if (data.completed) {
+            currentLevel = levels.length;
+            completeGame();
+            return;
+        }
+        
+        if (data.level > 0) {
+            currentLevel = data.level;
+            showMessage(`Tiếp tục từ level ${currentLevel + 1}`, 'info');
+        }
+        
+        renderLevel();
+        startTimer();
+    } catch (e) {
+        console.error(e);
+        showMessage('❌ Lỗi kết nối server. Chơi ở chế độ offline.', 'error');
+        renderLevel();
+        startTimer();
+    }
+}
+
+// Start game
+initGame();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f9fafb;
+  color: #333;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Navbar */
+.navbar {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.navbar .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+.navbar .logo img {
+  height: 40px;
+}
+.navbar .menu {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.navbar .menu a {
+  color: #444;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 6px 12px;
+  transition: 0.2s;
+}
+.navbar .menu a:hover {
+  color: #e11d48; /* đỏ qhuyroblox */
+}
+.btn-login {
+  background: #e11d48;
+  color: #fff !important;
+  border-radius: 6px;
+  padding: 6px 14px !important;
+}
+.btn-login:hover {
+  background: #be123c;
+}
+
+/* User box */
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+}
+.user-box img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+.user-box span {
+  font-size: 14px;
+}
+.dropdown {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  min-width: 180px;
+}
+.dropdown a,
+.dropdown button {
+  display: block;
+  padding: 10px 14px;
+  text-decoration: none;
+  color: #444;
+  font-size: 14px;
+  background: #fff;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+.dropdown a:hover,
+.dropdown button:hover {
+  background: #f9f9f9;
+  color: #e11d48;
+}
+
+/* Main */
+.main {
+  padding: 40px 0;
+  text-align: center;
+}
+.main h1 {
+  font-size: 28px;
+  margin-bottom: 16px;
+  color: #111;
+}
+
+/* Footer */
+.footer {
+  background: #111827;
+  color: #9ca3af;
+  text-align: center;
+  padding: 16px;
+  font-size: 14px;
+  margin-top: 40px;
+}
+
+.status-text {
+  color: #16a34a;          /* xanh lá cây đậm */
+  font-weight: 700;        /* in đậm */
+  font-size: 1.1rem;       /* chữ to hơn một chút */
+}

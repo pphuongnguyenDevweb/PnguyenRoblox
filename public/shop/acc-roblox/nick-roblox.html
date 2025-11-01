@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Shop Nick Roblox uy tín - giá rẻ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ✅ Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+          <meta name="description" content="Dịch vụ Nick Roblox uy tín - giá rẻ">
+    <meta name="robots" content="index, follow"> 
+    <link rel="canonical" href="https://humoral-antonina-denudative.ngrok-free.dev/shop/acc-roblox/nick-roblox.html" />
+
+  <!-- ✅ Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- ✅ Font đẹp -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, #f8fafc, #eef2ff);
+      min-height: 100vh;
+    }
+    .card {
+      transition: all 0.25s ease;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .spacer-200 {
+  /* Chiều cao 200 pixels */
+  height: 200px; 
+  /* Đôi khi dùng "min-height" để đảm bảo khoảng trống không bị mất */
+  min-height: 200px;
+}
+  </style>
+</head>
+<div id="header-container"></div>
+
+<div class="spacer-200"></div>
+
+<body class="bg-gray-100">
+  <!-- ✅ Danh sách sản phẩm -->
+  <main class="max-w-7xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">
+      🎮 DANH SÁCH NICK ROBLOX
+    </h1>
+
+                <div class="bg-red-400 text-white p-4 rounded-lg mb-8 font-semibold text-sm sm:text-base"> Ae nhớ Chụp lại Tk Mk acc để Đăng nhập nha Shop không có Lịch sử Tài khoản đâu mất Acc Shop không chịu trách nhiệm !
+            </div>
+
+
+    <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Sản phẩm được load từ nickproduct.js -->
+    </div>
+  </main>
+
+
+  <!-- ✅ Script -->
+  <script src="../productshop/nickproduct.js"></script>
+  <script src="../../header/header.js"></script>
+
+  <div id="contact-footer"></div>
+
+<script>
+  // Tải và chèn footer liên hệ
+  fetch("/Lien-he.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("contact-footer").innerHTML = html;
+    })
+    .catch(err => console.error("Lỗi khi tải footer:", err));
+</script>
+<script>
+(function(){
+  // WHITELIST: nếu user là admin (bạn thay bằng check thật), bỏ qua
+  const isAdmin = !!window.__IS_ADMIN__; // set ở server-render nếu cần
+  if(isAdmin) return;
+
+  // overlay nhẹ nhàng
+  function showNotice(reason) {
+    if(document.getElementById('__devtools_notice')) return;
+    const d = document.createElement('div');
+    d.id = '__devtools_notice';
+    d.style.cssText = [
+      'position:fixed','left:12px','bottom:12px','z-index:2147483647',
+      'background:rgba(0,0,0,0.8)','color:#fff','padding:10px 14px',
+      'border-radius:8px','font-family:Arial,Helvetica,sans-serif','font-size:13px'
+    ].join(';');
+    d.innerHTML = `<strong>Cảnh báo bảo mật</strong><div style="margin-top:6px">Việc mở DevTools/Inspector được phát hiện (${reason}). Nếu bạn không phải là developer, xin đóng DevTools để tiếp tục.</div>`;
+    document.body.appendChild(d);
+    setTimeout(()=> { d.remove && d.remove(); }, 8000);
+  }
+
+  // chặn context menu? (bật/tắt tùy trang)
+  // document.addEventListener('contextmenu', e => e.preventDefault());
+
+  // chặn phím tắt
+  document.addEventListener('keydown', (e) => {
+    const key = e.key?.toLowerCase();
+    if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c')) ||
+        (e.ctrlKey && key === 'u')) {
+      e.preventDefault();
+      showNotice('phím tắt');
+    }
+  });
+
+  // detect bằng resize (răn đe)
+  let lastOpen = false;
+  const detectResize = () => {
+    const open = (window.outerWidth - window.innerWidth > 160) || (window.outerHeight - window.innerHeight > 160);
+    if(open && !lastOpen) showNotice('panel mở');
+    lastOpen = open;
+  };
+  window.addEventListener('resize', detectResize);
+  setInterval(detectResize, 1000);
+})();
+</script>
+</body>
+</html>
