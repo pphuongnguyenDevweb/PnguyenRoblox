@@ -1,5 +1,6 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const fetch = require('node-fetch');
+require('dotenv').config(); // load biến môi trường từ .env
 
 const client = new Client({
   intents: [
@@ -9,7 +10,7 @@ const client = new Client({
   ]
 });
 
-const TOKEN = 'MTQyMTEzMzg3MzI0MDIxMTQ1Ng.GKdAsl.B6B0IqOKkfFXft5p_NDDsdB6uO7I0QCW2CmysI';
+const TOKEN = process.env.DISCORD_BOT_TOKEN;
 const API_SEND_ONE = 'https://humoral-antonina-denudative.ngrok-free.dev/api/admin/send-notification';
 const API_SEND_ALL = 'https://humoral-antonina-denudative.ngrok-free.dev/api/admin/send-notification-all';
 const API_ADD_CASH = 'https://humoral-antonina-denudative.ngrok-free.dev/api/admin/add-cash';

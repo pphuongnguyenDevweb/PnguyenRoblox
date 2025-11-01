@@ -159,7 +159,7 @@ app.post(
         let result;
         try {
           result = await fetch(
-            `https://humoral-antonina-denudative.ngrok-free.dev/api/admin/update-status-discord`,//---------CHỖ ĐỂ DÁN URL !!!--------------------------------------------------------------------------------------------------------------------------
+            `https://pnguyenroblox.onrender.com/api/admin/update-status-discord`,//---------CHỖ ĐỂ DÁN URL !!!--------------------------------------------------------------------------------------------------------------------------
             {
               method: 'POST',
               headers: {
