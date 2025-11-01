@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 (async () => {
   try {
-    await mongoose.connect('mongodb+srv://nguyen_user:CodePythonNguyen1842014@cluster0.t8lkuff.mongodb.net/test?retryWrites=true&w=majority');
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Đã kết nối MongoDB");
 
     const users = await User.find({ encrypted_yw_id: { $exists: false } });
