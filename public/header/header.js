@@ -1,5 +1,5 @@
 // header.js
-const API_BASE = "https://humoral-antonina-denudative.ngrok-free.dev/api";
+const API_BASE = "https://pnguyenroblox.onrender.com/api";
 
 // --- Lấy dữ liệu user từ server nếu sessionStorage chưa có ---
 async function getUser() {
@@ -301,7 +301,7 @@ function initSocketRealtime() {
     }
 
     try {
-        const socket = io("https://humoral-antonina-denudative.ngrok-free.dev", {
+        const socket = io("https://pnguyenroblox.onrender.com", {
             transports: ["websocket"],
             auth: { token },
             reconnection: true,
