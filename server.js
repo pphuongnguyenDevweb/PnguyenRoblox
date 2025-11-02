@@ -1102,7 +1102,6 @@ app.get('/api/history/balance', authMiddleware, async (req, res) => {
 });
 
 // GỬI THÔNG BÁO CHO USER TỪ DISCORD--------------------------->
-
 // ✅ Lấy danh sách thông báo của user hiện tại
 app.get('/api/notifications/me', authMiddleware, async (req, res) => {
   try {
@@ -1117,37 +1116,37 @@ app.get('/api/notifications/me', authMiddleware, async (req, res) => {
 });
 
 // ✅ Gửi thông báo đến user (chỉ admin)
-// Gửi thông báo đến user từ admin (dành cho Bot Discord)
 app.post('/api/admin/send-notification', async (req, res) => {
   try {
     const { username, message } = req.body;
 
-    console.log("📩 [API CALL] /api/admin/send-notification");
-    console.log("   ➤ Nhận dữ liệu:", { username, message });
-
     if (!username || !message) {
-      console.warn("⚠️ Thiếu username hoặc message trong request body");
       return res.status(400).json({ success: false, error: 'Thiếu username hoặc message' });
     }
 
-    // 🔍 Kiểm tra user trong MongoDB
     const user = await User.findOne({ username });
     if (!user) {
-      console.warn(`❌ Không tìm thấy user với username: ${username}`);
       return res.status(404).json({ success: false, error: 'Không tìm thấy user' });
     }
 
-    console.log(`✅ Đã tìm thấy user: ${user.username} (ID: ${user._id})`);
+    // 🔑 Check duplicate notification (trong vòng 5 phút)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const existing = await Notification.findOne({
+      user_id: user._id,
+      message: `[Admin]: ${message}`,
+      createdAt: { $gte: fiveMinutesAgo }
+    });
 
-    // 📨 Tạo thông báo trong MongoDB
+    if (existing) {
+      return res.status(409).json({ success: false, error: 'Notification đã gửi trước đó (tránh dupe).' });
+    }
+
     const notification = await Notification.create({
       user_id: user._id,
       message: `[Admin]: ${message}`,
       from_admin: true,
       createdAt: new Date()
     });
-
-    console.log(`💾 Đã lưu Notification cho user ${user.username}: ${notification.message}`);
 
     res.json({ success: true, username, notificationId: notification._id });
   } catch (err) {
@@ -1169,51 +1168,79 @@ app.post('/api/admin/send-notification-all', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Không có user nào trong hệ thống' });
     }
 
-    // Tạo thông báo cho tất cả user
-    const notifications = users.map(u => ({
-      user_id: u._id,
-      message: `[Admin]: ${message}`,
-      from_admin: true,
-      createdAt: new Date()
-    }));
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const notifications = [];
 
-    await Notification.insertMany(notifications);
-    console.log(`📢 Đã gửi thông báo cho ${users.length} người dùng.`);
+    for (const u of users) {
+      const exists = await Notification.findOne({
+        user_id: u._id,
+        message: `[Admin]: ${message}`,
+        createdAt: { $gte: fiveMinutesAgo }
+      });
+      if (!exists) {
+        notifications.push({
+          user_id: u._id,
+          message: `[Admin]: ${message}`,
+          from_admin: true,
+          createdAt: new Date()
+        });
+      }
+    }
 
-    res.json({ success: true, count: users.length });
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+
+    res.json({ success: true, count: notifications.length });
   } catch (err) {
     console.error('🔥 Lỗi khi gửi thông báo hàng loạt:', err);
     res.status(500).json({ success: false, error: 'Lỗi khi gửi thông báo hàng loạt' });
   }
 });
 
-
 // ✅ Cộng tiền vào tài khoản user
 app.post('/api/admin/add-cash', async (req, res) => {
   try {
-    const { username, amount } = req.body;
+    const { username, amount, transactionId } = req.body;
     if (!username || !amount) {
       return res.status(400).json({ success: false, error: 'Thiếu username hoặc amount' });
     }
 
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'Không tìm thấy user' });
+    // ✅ Kiểm tra duplicate theo transactionId (nếu bot gửi nhiều lần)
+    if (transactionId) {
+      const existing = await CashTransaction.findOne({ transactionId });
+      if (existing) {
+        return res.status(409).json({ success: false, error: 'Duplicate transaction, đã xử lý trước đó.' });
+      }
     }
 
-    // ✅ Cộng tiền (giả sử field tên là balance hoặc cash)
+    const user = await User.findOne({ username });
+    if (!user) return res.status(404).json({ success: false, error: 'Không tìm thấy user' });
+
     user.balance = (user.balance || 0) + Number(amount);
     await user.save();
 
-    console.log(`💰 Đã cộng ${amount} vào tài khoản ${username} (Tổng: ${user.balance})`);
-
-    // Gửi thông báo vào hộp thư
-    await Notification.create({
+    // Gửi notification tránh dupe
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const exists = await Notification.findOne({
       user_id: user._id,
       message: `[Admin]: Bạn đã được cộng ${amount} vào tài khoản.`,
-      from_admin: true,
-      createdAt: new Date()
+      createdAt: { $gte: fiveMinutesAgo }
     });
+
+    if (!exists) {
+      await Notification.create({
+        user_id: user._id,
+        message: `[Admin]: Bạn đã được cộng ${amount} vào tài khoản.`,
+        from_admin: true,
+        createdAt: new Date()
+      });
+    }
+
+    // Ghi transactionId nếu có
+    if (transactionId) {
+      await CashTransaction.create({ transactionId, username, amount });
+    }
 
     res.json({ success: true, username, new_balance: user.balance });
   } catch (err) {
