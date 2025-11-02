@@ -308,6 +308,14 @@
                 <span class="info-label">Địa Chỉ E-Mail</span>
                 <span class="info-value" id="display-email">Đang tải...</span>
             </div>
+
+            <div class="info-row">
+    <span class="info-label">ID Người Dùng</span>
+    <span class="info-value" id="display-user-id">Đang tải...</span>
+</div>
+            
+
+            
             
             <div class="info-row">
                 <span class="info-label">Ngày Đăng Ký</span>
@@ -410,6 +418,8 @@
                     document.getElementById('display-username').textContent = user.username || user.display_name || 'N/A';
                     document.getElementById('display-email').textContent = user.email || 'Chưa cập nhật';
                     document.getElementById('display-balance').textContent = `₫${(user.balance || 0).toLocaleString()}`;
+                    document.getElementById('display-user-id').textContent = user._id || 'N/A';
+
                     
                     // Format dates
                     const registerDate = user.created_at ? new Date(user.created_at).toLocaleString('vi-VN') : 'N/A';
