@@ -282,7 +282,7 @@ function renderLevel() {
     hintEl.textContent = level.hint;
     updateProgress();
 
-    // Render answer slots
+    // --- Render answer slots ---
     answerContainer.innerHTML = '';
     for (let i = 0; i < level.code.length; i++) {
         const slot = document.createElement('div');
@@ -291,114 +291,99 @@ function renderLevel() {
         answerContainer.appendChild(slot);
     }
 
-    // Render shuffled characters
+    // --- Render shuffled characters ---
     shuffleContainer.innerHTML = '';
     let shuffled = shuffleString(level.code);
     shuffled.split('').forEach(ch => {
         const div = document.createElement('div');
         div.className = 'shuffleChar';
         div.textContent = ch;
-        div.draggable = true;
 
-        // --- Common function to reset dragged style ---
-        const resetStyle = el => {
-            el.style.opacity = '1';
-            el.style.position = '';
-            el.style.left = '';
-            el.style.top = '';
-        };
-
-        // --- Desktop drag ---
-        div.addEventListener('dragstart', e => {
-            dragged = e.target;
-            e.target.style.opacity = '0.5';
-        });
-        div.addEventListener('dragend', e => resetStyle(e.target));
-
-        // --- Mobile touch ---
-        div.addEventListener('touchstart', e => {
-            dragged = e.target;
-            e.target.style.opacity = '0.5';
-            e.target.style.position = 'absolute';
-        });
-
-        div.addEventListener('touchmove', e => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            e.target.style.left = touch.clientX - e.target.offsetWidth / 2 + 'px';
-            e.target.style.top = touch.clientY - e.target.offsetHeight / 2 + 'px';
-        });
-
-div.addEventListener('touchend', e => {
-    if (!dragged) return;
-    const touch = e.changedTouches[0];
-
-    // Tìm slot mà thả vào
-    const slot = Array.from(answerContainer.children).find(s => {
-        const rect = s.getBoundingClientRect();
-        return touch.clientX >= rect.left && touch.clientX <= rect.right &&
-               touch.clientY >= rect.top && touch.clientY <= rect.bottom;
-    });
-
-    if (slot) {
-        // Nếu slot đã có ký tự, trả ký tự cũ về shuffleContainer
-        if (slot.dataset.char) {
-            const oldChar = document.createElement('div');
-            oldChar.className = 'shuffleChar';
-            oldChar.textContent = slot.dataset.char;
-            oldChar.draggable = true;
-
-            // gắn lại sự kiện touch & drag
-            attachDragEvents(oldChar);
-
-            shuffleContainer.appendChild(oldChar);
-        }
-
-        // Gán ký tự mới vào slot
-        slot.textContent = dragged.textContent;
-        slot.classList.add('filled');
-        slot.dataset.char = dragged.textContent; // chỉ lưu ký tự
-        dragged.remove(); // xóa element cũ
-    } else {
-        // Thả ngoài slot, trả về shuffleContainer
-        dragged.style.position = '';
-        dragged.style.left = '';
-        dragged.style.top = '';
-        shuffleContainer.appendChild(dragged);
-    }
-
-    dragged = null;
-    checkLevelComplete();
-});
-
-// Hàm tiện lợi gắn lại sự kiện cho shuffleChar mới
-function attachDragEvents(el) {
-    el.draggable = true;
-    el.addEventListener('dragstart', e => {
-        dragged = e.target;
-        e.target.style.opacity = '0.5';
-    });
-    el.addEventListener('dragend', e => e.target.style.opacity = '1');
-
-    el.addEventListener('touchstart', e => {
-        dragged = e.target;
-        e.target.style.opacity = '0.5';
-        e.target.style.position = 'absolute';
-    });
-    el.addEventListener('touchmove', e => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        e.target.style.left = touch.clientX - e.target.offsetWidth / 2 + 'px';
-        e.target.style.top = touch.clientY - e.target.offsetHeight / 2 + 'px';
-    });
-}
-
-
+        // Gắn event cho desktop & mobile
+        attachDragEvents(div);
 
         shuffleContainer.appendChild(div);
     });
 
     resetBtn.style.display = 'inline-block';
+}
+
+// --- Gắn event cho shuffleChar ---
+function attachDragEvents(el) {
+    el.draggable = true;
+
+    const resetStyle = el => {
+        el.style.opacity = '1';
+        el.style.position = '';
+        el.style.left = '';
+        el.style.top = '';
+    };
+
+    // --- Desktop ---
+    el.addEventListener('dragstart', e => {
+        dragged = e.target;
+        e.target.style.opacity = '0.5';
+    });
+    el.addEventListener('dragend', e => resetStyle(e.target));
+
+    // --- Mobile ---
+    el.addEventListener('touchstart', e => {
+        dragged = e.target;
+        e.target.style.opacity = '0.5';
+        e.target.style.position = 'absolute';
+        e.target.style.zIndex = 1000; // cho layer trên cùng
+    });
+
+    el.addEventListener('touchmove', e => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        el.style.left = touch.clientX - el.offsetWidth / 2 + 'px';
+        el.style.top = touch.clientY - el.offsetHeight / 2 + 'px';
+    });
+
+    el.addEventListener('touchend', e => {
+        if (!dragged) return;
+        const touch = e.changedTouches[0];
+
+        // Tìm slot gần nhất
+        const slot = Array.from(answerContainer.children).find(s => {
+            const rect = s.getBoundingClientRect();
+            // mở rộng 5px để chính xác hơn trên mobile
+            return touch.clientX >= rect.left - 5 && touch.clientX <= rect.right + 5 &&
+                   touch.clientY >= rect.top - 5 && touch.clientY <= rect.bottom + 5;
+        });
+
+        if (slot) {
+            // Nếu slot đã có ký tự, trả element cũ về shuffleContainer
+            if (slot.dataset.charEl) {
+                shuffleContainer.appendChild(slot.dataset.charEl);
+                delete slot.dataset.charEl;
+                slot.classList.remove('filled');
+                slot.textContent = '';
+            }
+
+            // Gán element mới vào slot
+            slot.dataset.charEl = dragged;
+            slot.textContent = dragged.textContent;
+            slot.classList.add('filled');
+
+            // reset style cho element
+            dragged.style.position = '';
+            dragged.style.left = '';
+            dragged.style.top = '';
+            dragged.style.opacity = '1';
+        } else {
+            // Thả ngoài slot
+            dragged.style.position = '';
+            dragged.style.left = '';
+            dragged.style.top = '';
+            dragged.style.opacity = '1';
+            shuffleContainer.appendChild(dragged);
+        }
+
+        dragged = null;
+        checkLevelComplete();
+    });
 }
 
 // --- Desktop drag & drop handlers ---
