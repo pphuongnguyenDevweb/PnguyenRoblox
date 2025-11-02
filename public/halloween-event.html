@@ -317,6 +317,7 @@ function attachDragEvents(el) {
         el.style.position = '';
         el.style.left = '';
         el.style.top = '';
+        el.style.zIndex = '';
     };
 
     // --- Desktop ---
@@ -329,9 +330,10 @@ function attachDragEvents(el) {
     // --- Mobile ---
     el.addEventListener('touchstart', e => {
         dragged = e.target;
+        resetStyle(e.target);
         e.target.style.opacity = '0.5';
         e.target.style.position = 'absolute';
-        e.target.style.zIndex = 1000; // cho layer trên cùng
+        e.target.style.zIndex = 1000; // layer trên cùng
     });
 
     el.addEventListener('touchmove', e => {
@@ -348,7 +350,6 @@ function attachDragEvents(el) {
         // Tìm slot gần nhất
         const slot = Array.from(answerContainer.children).find(s => {
             const rect = s.getBoundingClientRect();
-            // mở rộng 5px để chính xác hơn trên mobile
             return touch.clientX >= rect.left - 5 && touch.clientX <= rect.right + 5 &&
                    touch.clientY >= rect.top - 5 && touch.clientY <= rect.bottom + 5;
         });
@@ -356,10 +357,9 @@ function attachDragEvents(el) {
         if (slot) {
             // Nếu slot đã có ký tự, trả element cũ về shuffleContainer
             if (slot.dataset.charEl) {
-                shuffleContainer.appendChild(slot.dataset.charEl);
-                delete slot.dataset.charEl;
-                slot.classList.remove('filled');
-                slot.textContent = '';
+                const oldEl = slot.dataset.charEl;
+                resetStyle(oldEl);
+                shuffleContainer.appendChild(oldEl);
             }
 
             // Gán element mới vào slot
@@ -367,17 +367,10 @@ function attachDragEvents(el) {
             slot.textContent = dragged.textContent;
             slot.classList.add('filled');
 
-            // reset style cho element
-            dragged.style.position = '';
-            dragged.style.left = '';
-            dragged.style.top = '';
-            dragged.style.opacity = '1';
+            resetStyle(dragged);
         } else {
-            // Thả ngoài slot
-            dragged.style.position = '';
-            dragged.style.left = '';
-            dragged.style.top = '';
-            dragged.style.opacity = '1';
+            // Thả ngoài slot, trả về shuffleContainer
+            resetStyle(dragged);
             shuffleContainer.appendChild(dragged);
         }
 
@@ -405,28 +398,29 @@ answerContainer.addEventListener('drop', e => {
     if (!target) return;
     target.classList.remove('dragover');
 
-    // Trả ký tự cũ về shuffle
-    if (target.textContent) {
-        const oldChar = document.createElement('div');
-        oldChar.className = 'shuffleChar';
-        oldChar.textContent = target.textContent;
-        oldChar.draggable = true;
-        oldChar.addEventListener('dragstart', e => {
-            dragged = e.target;
-            e.target.style.opacity = '0.5';
-        });
-        oldChar.addEventListener('dragend', e => {
-            e.target.style.opacity = '1';
-        });
-        shuffleContainer.appendChild(oldChar);
+    // Trả ký tự cũ về shuffleContainer
+    if (target.dataset.charEl) {
+        const oldEl = target.dataset.charEl;
+        oldEl.style.position = '';
+        oldEl.style.left = '';
+        oldEl.style.top = '';
+        oldEl.style.zIndex = '';
+        oldEl.style.opacity = '1';
+        shuffleContainer.appendChild(oldEl);
     }
 
+    // Gán element mới vào slot
+    target.dataset.charEl = dragged;
     target.textContent = dragged.textContent;
     target.classList.add('filled');
+
+    // Xóa khỏi shuffleContainer
     dragged.remove();
     dragged = null;
+
     checkLevelComplete();
 });
+
 
 async function checkLevelComplete() {
     const slots = answerContainer.querySelectorAll('.answerSlot');
