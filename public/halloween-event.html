@@ -342,24 +342,57 @@ div.addEventListener('touchend', e => {
 
     if (slot) {
         // Nếu slot đã có ký tự, trả ký tự cũ về shuffleContainer
-        if (slot.dataset.charEl) {
-            shuffleContainer.appendChild(slot.dataset.charEl);
-            delete slot.dataset.charEl;
+        if (slot.dataset.char) {
+            const oldChar = document.createElement('div');
+            oldChar.className = 'shuffleChar';
+            oldChar.textContent = slot.dataset.char;
+            oldChar.draggable = true;
+
+            // gắn lại sự kiện touch & drag
+            attachDragEvents(oldChar);
+
+            shuffleContainer.appendChild(oldChar);
         }
 
         // Gán ký tự mới vào slot
         slot.textContent = dragged.textContent;
         slot.classList.add('filled');
-        slot.dataset.charEl = dragged; // lưu element hiện tại vào dataset
+        slot.dataset.char = dragged.textContent; // chỉ lưu ký tự
+        dragged.remove(); // xóa element cũ
     } else {
         // Thả ngoài slot, trả về shuffleContainer
+        dragged.style.position = '';
+        dragged.style.left = '';
+        dragged.style.top = '';
         shuffleContainer.appendChild(dragged);
     }
 
-    resetStyle(dragged);
     dragged = null;
     checkLevelComplete();
 });
+
+// Hàm tiện lợi gắn lại sự kiện cho shuffleChar mới
+function attachDragEvents(el) {
+    el.draggable = true;
+    el.addEventListener('dragstart', e => {
+        dragged = e.target;
+        e.target.style.opacity = '0.5';
+    });
+    el.addEventListener('dragend', e => e.target.style.opacity = '1');
+
+    el.addEventListener('touchstart', e => {
+        dragged = e.target;
+        e.target.style.opacity = '0.5';
+        e.target.style.position = 'absolute';
+    });
+    el.addEventListener('touchmove', e => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        e.target.style.left = touch.clientX - e.target.offsetWidth / 2 + 'px';
+        e.target.style.top = touch.clientY - e.target.offsetHeight / 2 + 'px';
+    });
+}
+
 
 
         shuffleContainer.appendChild(div);
