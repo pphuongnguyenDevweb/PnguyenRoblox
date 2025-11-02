@@ -329,46 +329,38 @@ function renderLevel() {
             e.target.style.top = touch.clientY - e.target.offsetHeight / 2 + 'px';
         });
 
-        div.addEventListener('touchend', e => {
-            if (!dragged) return;
-            const touch = e.changedTouches[0];
+div.addEventListener('touchend', e => {
+    if (!dragged) return;
+    const touch = e.changedTouches[0];
 
-            const slot = Array.from(answerContainer.children).find(s => {
-                const rect = s.getBoundingClientRect();
-                return touch.clientX >= rect.left && touch.clientX <= rect.right &&
-                       touch.clientY >= rect.top && touch.clientY <= rect.bottom;
-            });
+    // Tìm slot mà thả vào
+    const slot = Array.from(answerContainer.children).find(s => {
+        const rect = s.getBoundingClientRect();
+        return touch.clientX >= rect.left && touch.clientX <= rect.right &&
+               touch.clientY >= rect.top && touch.clientY <= rect.bottom;
+    });
 
-            // Nếu thả đúng slot
-            if (slot) {
-                if (slot.textContent) {
-                    // Trả ký tự cũ về shuffle
-                    const oldChar = document.createElement('div');
-                    oldChar.className = 'shuffleChar';
-                    oldChar.textContent = slot.textContent;
-                    oldChar.draggable = true;
+    if (slot) {
+        // Nếu slot đã có ký tự, trả ký tự cũ về shuffleContainer
+        if (slot.dataset.charEl) {
+            shuffleContainer.appendChild(slot.dataset.charEl);
+            delete slot.dataset.charEl;
+        }
 
-                    // Desktop drag events
-                    oldChar.addEventListener('dragstart', e => {
-                        dragged = e.target;
-                        e.target.style.opacity = '0.5';
-                    });
-                    oldChar.addEventListener('dragend', e => resetStyle(e.target));
+        // Gán ký tự mới vào slot
+        slot.textContent = dragged.textContent;
+        slot.classList.add('filled');
+        slot.dataset.charEl = dragged; // lưu element hiện tại vào dataset
+    } else {
+        // Thả ngoài slot, trả về shuffleContainer
+        shuffleContainer.appendChild(dragged);
+    }
 
-                    shuffleContainer.appendChild(oldChar);
-                }
+    resetStyle(dragged);
+    dragged = null;
+    checkLevelComplete();
+});
 
-                slot.textContent = dragged.textContent;
-                slot.classList.add('filled');
-            } else {
-                // Thả ngoài slot, trả về shuffleContainer
-                shuffleContainer.appendChild(dragged);
-            }
-
-            resetStyle(dragged);
-            dragged = null;
-            checkLevelComplete();
-        });
 
         shuffleContainer.appendChild(div);
     });
