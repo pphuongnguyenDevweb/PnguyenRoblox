@@ -526,5 +526,54 @@ async function initGame() {
 initGame();
 </script>
 
+  <script>
+(function(){
+  // WHITELIST: nếu user là admin (bạn thay bằng check thật), bỏ qua
+  const isAdmin = !!window.__IS_ADMIN__; // set ở server-render nếu cần
+  if(isAdmin) return;
+
+  // overlay nhẹ nhàng
+  function showNotice(reason) {
+    if(document.getElementById('__devtools_notice')) return;
+    const d = document.createElement('div');
+    d.id = '__devtools_notice';
+    d.style.cssText = [
+      'position:fixed','left:12px','bottom:12px','z-index:2147483647',
+      'background:rgba(0,0,0,0.8)','color:#fff','padding:10px 14px',
+      'border-radius:8px','font-family:Arial,Helvetica,sans-serif','font-size:13px'
+    ].join(';');
+    d.innerHTML = `<strong>Cảnh báo bảo mật</strong><div style="margin-top:6px">Việc mở DevTools/Inspector được phát hiện (${reason}). Nếu bạn không phải là developer, xin đóng DevTools để tiếp tục.</div>`;
+    document.body.appendChild(d);
+    setTimeout(()=> { d.remove && d.remove(); }, 8000);
+  }
+
+  // chặn context menu? (bật/tắt tùy trang)
+  // document.addEventListener('contextmenu', e => e.preventDefault());
+
+  // chặn phím tắt
+  document.addEventListener('keydown', (e) => {
+    const key = e.key?.toLowerCase();
+    if (e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c')) ||
+        (e.ctrlKey && key === 'u')) {
+      e.preventDefault();
+      showNotice('phím tắt');
+    }
+  });
+
+  // detect bằng resize (răn đe)
+  let lastOpen = false;
+  const detectResize = () => {
+    const open = (window.outerWidth - window.innerWidth > 160) || (window.outerHeight - window.innerHeight > 160);
+    if(open && !lastOpen) showNotice('panel mở');
+    lastOpen = open;
+  };
+  window.addEventListener('resize', detectResize);
+  setInterval(detectResize, 1000);
+})();
+</script>
+
+  
+
 </body>
 </html>
