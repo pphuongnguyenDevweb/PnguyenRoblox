@@ -299,51 +299,109 @@ function renderLevel() {
         div.className = 'shuffleChar';
         div.textContent = ch;
         div.draggable = true;
-        div.addEventListener('dragstart', e => { 
+
+        // --- Common function to reset dragged style ---
+        const resetStyle = el => {
+            el.style.opacity = '1';
+            el.style.position = '';
+            el.style.left = '';
+            el.style.top = '';
+        };
+
+        // --- Desktop drag ---
+        div.addEventListener('dragstart', e => {
             dragged = e.target;
             e.target.style.opacity = '0.5';
         });
-        div.addEventListener('dragend', e => {
-            e.target.style.opacity = '1';
+        div.addEventListener('dragend', e => resetStyle(e.target));
+
+        // --- Mobile touch ---
+        div.addEventListener('touchstart', e => {
+            dragged = e.target;
+            e.target.style.opacity = '0.5';
+            e.target.style.position = 'absolute';
         });
+
+        div.addEventListener('touchmove', e => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            e.target.style.left = touch.clientX - e.target.offsetWidth / 2 + 'px';
+            e.target.style.top = touch.clientY - e.target.offsetHeight / 2 + 'px';
+        });
+
+        div.addEventListener('touchend', e => {
+            if (!dragged) return;
+            const touch = e.changedTouches[0];
+
+            const slot = Array.from(answerContainer.children).find(s => {
+                const rect = s.getBoundingClientRect();
+                return touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                       touch.clientY >= rect.top && touch.clientY <= rect.bottom;
+            });
+
+            // Nếu thả đúng slot
+            if (slot) {
+                if (slot.textContent) {
+                    // Trả ký tự cũ về shuffle
+                    const oldChar = document.createElement('div');
+                    oldChar.className = 'shuffleChar';
+                    oldChar.textContent = slot.textContent;
+                    oldChar.draggable = true;
+
+                    // Desktop drag events
+                    oldChar.addEventListener('dragstart', e => {
+                        dragged = e.target;
+                        e.target.style.opacity = '0.5';
+                    });
+                    oldChar.addEventListener('dragend', e => resetStyle(e.target));
+
+                    shuffleContainer.appendChild(oldChar);
+                }
+
+                slot.textContent = dragged.textContent;
+                slot.classList.add('filled');
+            } else {
+                // Thả ngoài slot, trả về shuffleContainer
+                shuffleContainer.appendChild(dragged);
+            }
+
+            resetStyle(dragged);
+            dragged = null;
+            checkLevelComplete();
+        });
+
         shuffleContainer.appendChild(div);
     });
 
     resetBtn.style.display = 'inline-block';
 }
 
-// Drag and drop handlers
+// --- Desktop drag & drop handlers ---
 answerContainer.addEventListener('dragover', e => {
     e.preventDefault();
     const target = e.target.closest('.answerSlot');
-    if (target) {
-        target.classList.add('dragover');
-    }
+    if (target) target.classList.add('dragover');
 });
 
 answerContainer.addEventListener('dragleave', e => {
     const target = e.target.closest('.answerSlot');
-    if (target) {
-        target.classList.remove('dragover');
-    }
+    if (target) target.classList.remove('dragover');
 });
 
 answerContainer.addEventListener('drop', e => {
     e.preventDefault();
     if (!dragged) return;
-    
     const target = e.target.closest('.answerSlot');
     if (!target) return;
-    
     target.classList.remove('dragover');
-    
-    // Return old character to shuffle area
+
+    // Trả ký tự cũ về shuffle
     if (target.textContent) {
         const oldChar = document.createElement('div');
         oldChar.className = 'shuffleChar';
         oldChar.textContent = target.textContent;
         oldChar.draggable = true;
-        oldChar.addEventListener('dragstart', e => { 
+        oldChar.addEventListener('dragstart', e => {
             dragged = e.target;
             e.target.style.opacity = '0.5';
         });
@@ -352,12 +410,11 @@ answerContainer.addEventListener('drop', e => {
         });
         shuffleContainer.appendChild(oldChar);
     }
-    
+
     target.textContent = dragged.textContent;
     target.classList.add('filled');
     dragged.remove();
     dragged = null;
-    
     checkLevelComplete();
 });
 
