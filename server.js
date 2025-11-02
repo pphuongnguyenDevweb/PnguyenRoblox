@@ -1358,7 +1358,7 @@ app.post('/api/user/change-password', authMiddleware, async (req, res) => {
     });
   }
 });
-// GỬI BOT SENDBOT -------------------->
+
 
 const client = new Client({
   intents: [
@@ -1373,14 +1373,21 @@ const API_SEND_ONE = 'https://pnguyenroblox.onrender.com/api/admin/send-notifica
 const API_SEND_ALL = 'https://pnguyenroblox.onrender.com/api/admin/send-notification-all';
 const API_ADD_CASH = 'https://pnguyenroblox.onrender.com/api/admin/add-cash';
 
-client.once('clientReady', () => {
+// ✅ Map lưu ID của message đã xử lý để tránh duplicate
+const processedMessages = new Set();
+
+client.once('ready', () => {
   console.log(`🤖 Bot đã đăng nhập: ${client.user.tag}`);
 });
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
 
-  // ------------------- LỆNH GỬI THÔNG BÁO RIÊNG -------------------
+  // 🔒 Kiểm tra duplicate message
+  if (processedMessages.has(message.id)) return;
+  processedMessages.add(message.id);
+
+  // ------------------- LỆNH GỬI THÔNG BÁO -------------------
   if (message.content.startsWith('send!')) {
     const match = message.content.match(/send!\s*"(.*?)"\s*@(\S+)/);
     if (!match) return message.reply('❌ Sai cú pháp!\nVí dụ: send! "xin chào" @tenuser hoặc send! "chào cả nhà" @all');
@@ -1389,7 +1396,6 @@ client.on('messageCreate', async (message) => {
     const username = match[2];
 
     try {
-      // 📨 Nếu là @all → gọi API gửi toàn bộ
       if (username === 'all') {
         const res = await fetch(API_SEND_ALL, {
           method: 'POST',
@@ -1402,7 +1408,6 @@ client.on('messageCreate', async (message) => {
         else
           message.reply(`⚠️ Lỗi: ${data.error || 'Không thể gửi cho tất cả user.'}`);
       } else {
-        // 📨 Gửi cho 1 user cụ thể
         const res = await fetch(API_SEND_ONE, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1429,11 +1434,15 @@ client.on('messageCreate', async (message) => {
     const username = match[2];
 
     try {
+      // Tạo transactionId duy nhất theo message.id để tránh duplicate
+      const transactionId = message.id;
+
       const res = await fetch(API_ADD_CASH, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, amount })
+        body: JSON.stringify({ username, amount, transactionId })
       });
+
       const data = await res.json();
       if (res.ok && data.success)
         message.reply(`💰 Đã cộng **${amount}** vào tài khoản **${username}** (Số dư mới: ${data.new_balance}).`);
@@ -1444,6 +1453,9 @@ client.on('messageCreate', async (message) => {
       message.reply('🔥 Lỗi khi cộng tiền.');
     }
   }
+
+  // ✅ Xóa message đã xử lý sau 5 phút để tránh memory leak
+  setTimeout(() => processedMessages.delete(message.id), 5 * 60 * 1000);
 });
 
 client.login(TOKEN);
