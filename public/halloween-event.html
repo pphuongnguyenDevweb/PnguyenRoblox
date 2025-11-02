@@ -5,10 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Halloween Puzzle Game</title>
 <script src="https://cdn.tailwindcss.com"></script>
-                <meta name="description" content="Sự kiện Halloween - PnguyenRoblox"> 
-    <meta name="robots" content="index, follow"> 
-    <link rel="canonical" href="https://pnguyenroblox.onrender.com/halloween-event.html" />
-    
 <style>
 body { 
     background: linear-gradient(135deg, #1a1a1a 0%, #2d1b00 100%); 
@@ -229,10 +225,10 @@ h1 {
 <script>
 const levels = [
     { code: 'HALLOWEEN', hint: '🎃 Tên của lễ hội kinh dị vào ngày 31/10' },
-    { code: 'SHOPPNGUYENROBLOX', hint: 'Đây là biểu tượng Shop của chúng toii' },
-    { code: 'PNGUYENROBLOXCHUCMUNGNGAYHALLOWEEN', hint: 'Đây là tên shop - lời chúc tới lễ hội' },
-    { code: 'DICHVUROBLOXUYTIN-GIARE', hint: 'Dịch vụ....giá rẻ 😮' },
-    { code: 'SUKIENEVENTHALLOWEENGIAITHUONGTU1K-500K', hint: 'Mở đầu bằng từ Sự kiện Event và khúc cuối là giải thưởng =00' }
+    { code: 'SHOPPNGUYENROBLOX', hint: 'Đây là biểu tượng Shop của chúng tôi' },
+    { code: 'PNGUYENROBLOXCHUCMUNGNGAYHALLOWEEN', hint: 'Tên shop - lời chúc lễ hội' },
+    { code: 'DICHVUROBLOXUYTIN-GIARE', hint: 'Dịch vụ uy tín, giá rẻ' },
+    { code: 'SUKIENEVENTHALLOWEENGIAITHUONGTU1K-500K', hint: 'Bắt đầu bằng "Sự kiện Event", kết thúc "giải thưởng"' }
 ];
 
 let currentLevel = 0;
@@ -252,389 +248,208 @@ const messageEl = document.getElementById('message');
 const rewardBtn = document.getElementById('rewardBtn');
 const resetBtn = document.getElementById('resetBtn');
 
-// Utility functions
-function shuffleString(str) { 
-    return str.split('').sort(() => Math.random() - 0.5).join(''); 
-}
+// Utils
+function shuffleString(str) { return str.split('').sort(() => Math.random() - 0.5).join(''); }
 
-function showMessage(text, type = 'info') {
+function showMessage(text, type='info') {
     messageEl.textContent = text;
     messageEl.className = `message ${type}`;
     messageEl.style.display = 'block';
-    setTimeout(() => {
-        messageEl.style.display = 'none';
-    }, 3000);
+    setTimeout(() => messageEl.style.display = 'none', 3000);
 }
 
 function updateProgress() {
-    const progress = (currentLevel / levels.length) * 100;
-    progressFill.style.width = progress + '%';
-    levelInfo.textContent = `Level ${currentLevel + 1} / ${levels.length}`;
+    progressFill.style.width = ((currentLevel) / levels.length * 100) + '%';
+    levelInfo.textContent = `Level ${currentLevel+1} / ${levels.length}`;
 }
 
-function renderLevel() {
-    if (currentLevel >= levels.length) {
-        completeGame();
-        return;
-    }
-
-    const level = levels[currentLevel];
-    hintEl.textContent = level.hint;
-    updateProgress();
-
-    // --- Render answer slots ---
-    answerContainer.innerHTML = '';
-    for (let i = 0; i < level.code.length; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'answerSlot';
-        slot.dataset.index = i;
-        answerContainer.appendChild(slot);
-    }
-
-    // --- Render shuffled characters ---
-    shuffleContainer.innerHTML = '';
-    let shuffled = shuffleString(level.code);
-    shuffled.split('').forEach(ch => {
-        const div = document.createElement('div');
-        div.className = 'shuffleChar';
-        div.textContent = ch;
-
-        // Gắn event cho desktop & mobile
-        attachDragEvents(div);
-
-        shuffleContainer.appendChild(div);
-    });
-
-    resetBtn.style.display = 'inline-block';
-}
-
-// --- Gắn event cho shuffleChar ---
 function attachDragEvents(el) {
     el.draggable = true;
 
-    const resetStyle = el => {
-        el.style.opacity = '1';
-        el.style.position = '';
-        el.style.left = '';
-        el.style.top = '';
-        el.style.zIndex = '';
+    const resetStyle = e => {
+        e.style.opacity = '1';
+        e.style.position = '';
+        e.style.left = '';
+        e.style.top = '';
+        e.style.zIndex = '';
     };
 
-    // --- Desktop ---
-    el.addEventListener('dragstart', e => {
-        dragged = e.target;
-        e.target.style.opacity = '0.5';
-    });
+    // Desktop
+    el.addEventListener('dragstart', e => { dragged = e.target; e.target.style.opacity='0.5'; });
     el.addEventListener('dragend', e => resetStyle(e.target));
 
-    // --- Mobile ---
+    // Mobile
     el.addEventListener('touchstart', e => {
         dragged = e.target;
-        resetStyle(e.target);
-        e.target.style.opacity = '0.5';
-        e.target.style.position = 'absolute';
-        e.target.style.zIndex = 1000; // layer trên cùng
+        e.target.style.opacity='0.5';
+        e.target.style.position='absolute';
+        e.target.style.zIndex=1000;
     });
 
     el.addEventListener('touchmove', e => {
         e.preventDefault();
         const touch = e.touches[0];
-        el.style.left = touch.clientX - el.offsetWidth / 2 + 'px';
-        el.style.top = touch.clientY - el.offsetHeight / 2 + 'px';
+        el.style.left = touch.clientX - el.offsetWidth/2 + 'px';
+        el.style.top = touch.clientY - el.offsetHeight/2 + 'px';
     });
 
     el.addEventListener('touchend', e => {
         if (!dragged) return;
         const touch = e.changedTouches[0];
+        let placed = false;
 
-        // Tìm slot gần nhất
-        const slot = Array.from(answerContainer.children).find(s => {
-            const rect = s.getBoundingClientRect();
-            return touch.clientX >= rect.left - 5 && touch.clientX <= rect.right + 5 &&
-                   touch.clientY >= rect.top - 5 && touch.clientY <= rect.bottom + 5;
+        Array.from(answerContainer.children).forEach(slot => {
+            const rect = slot.getBoundingClientRect();
+            if(touch.clientX >= rect.left-5 && touch.clientX <= rect.right+5 &&
+               touch.clientY >= rect.top-5 && touch.clientY <= rect.bottom+5) {
+                // trả ký tự cũ
+                if(slot.dataset.charEl) {
+                    shuffleContainer.appendChild(slot.dataset.charEl);
+                    delete slot.dataset.charEl;
+                    slot.textContent='';
+                    slot.classList.remove('filled');
+                }
+                slot.dataset.charEl = dragged;
+                slot.textContent = dragged.textContent;
+                slot.classList.add('filled');
+                placed = true;
+            }
         });
 
-        if (slot) {
-            // Nếu slot đã có ký tự, trả element cũ về shuffleContainer
-            if (slot.dataset.charEl) {
-                const oldEl = slot.dataset.charEl;
-                resetStyle(oldEl);
-                shuffleContainer.appendChild(oldEl);
-            }
+        if(!placed) shuffleContainer.appendChild(dragged);
 
-            // Gán element mới vào slot
-            slot.dataset.charEl = dragged;
-            slot.textContent = dragged.textContent;
-            slot.classList.add('filled');
+        dragged.style.opacity='1';
+        dragged.style.position='';
+        dragged.style.left='';
+        dragged.style.top='';
+        dragged.style.zIndex='';
+        dragged=null;
 
-            resetStyle(dragged);
-        } else {
-            // Thả ngoài slot, trả về shuffleContainer
-            resetStyle(dragged);
-            shuffleContainer.appendChild(dragged);
-        }
-
-        dragged = null;
         checkLevelComplete();
     });
 }
 
-// --- Desktop drag & drop handlers ---
-answerContainer.addEventListener('dragover', e => {
-    e.preventDefault();
-    const target = e.target.closest('.answerSlot');
-    if (target) target.classList.add('dragover');
-});
+function renderLevel() {
+    if(currentLevel >= levels.length) { completeGame(); return; }
 
-answerContainer.addEventListener('dragleave', e => {
-    const target = e.target.closest('.answerSlot');
-    if (target) target.classList.remove('dragover');
-});
+    const level = levels[currentLevel];
+    hintEl.textContent = level.hint;
+    updateProgress();
 
-answerContainer.addEventListener('drop', e => {
-    e.preventDefault();
-    if (!dragged) return;
-    const target = e.target.closest('.answerSlot');
-    if (!target) return;
-    target.classList.remove('dragover');
-
-    // Trả ký tự cũ về shuffleContainer
-    if (target.dataset.charEl) {
-        const oldEl = target.dataset.charEl;
-        oldEl.style.position = '';
-        oldEl.style.left = '';
-        oldEl.style.top = '';
-        oldEl.style.zIndex = '';
-        oldEl.style.opacity = '1';
-        shuffleContainer.appendChild(oldEl);
+    // answer slots
+    answerContainer.innerHTML='';
+    for(let i=0;i<level.code.length;i++){
+        const slot=document.createElement('div');
+        slot.className='answerSlot';
+        slot.dataset.index=i;
+        answerContainer.appendChild(slot);
     }
 
-    // Gán element mới vào slot
-    target.dataset.charEl = dragged;
-    target.textContent = dragged.textContent;
-    target.classList.add('filled');
+    // shuffled letters
+    shuffleContainer.innerHTML='';
+    shuffleString(level.code).split('').forEach(ch=>{
+        const div=document.createElement('div');
+        div.className='shuffleChar';
+        div.textContent=ch;
+        attachDragEvents(div);
+        shuffleContainer.appendChild(div);
+    });
 
-    // Xóa khỏi shuffleContainer
-    dragged.remove();
-    dragged = null;
+    resetBtn.style.display='inline-block';
+}
+
+// Drag & Drop Desktop
+answerContainer.addEventListener('dragover', e=>{ e.preventDefault(); const t=e.target.closest('.answerSlot'); if(t) t.classList.add('dragover'); });
+answerContainer.addEventListener('dragleave', e=>{ const t=e.target.closest('.answerSlot'); if(t) t.classList.remove('dragover'); });
+answerContainer.addEventListener('drop', e=>{
+    e.preventDefault(); if(!dragged) return;
+    const t=e.target.closest('.answerSlot'); if(!t) return;
+    t.classList.remove('dragover');
+
+    if(t.textContent){
+        const old=document.createElement('div'); old.className='shuffleChar'; old.textContent=t.textContent; attachDragEvents(old); shuffleContainer.appendChild(old);
+    }
+
+    t.textContent = dragged.textContent;
+    t.classList.add('filled');
+    dragged.remove(); dragged=null;
 
     checkLevelComplete();
 });
 
+// Check completion
+async function checkLevelComplete(){
+    const slots=[...answerContainer.children];
+    const correct=levels[currentLevel].code.split('');
+    let isCorrect=true;
+    for(let i=0;i<slots.length;i++) if(slots[i].textContent!==correct[i]) { isCorrect=false; break; }
 
-async function checkLevelComplete() {
-    const slots = answerContainer.querySelectorAll('.answerSlot');
-    const levelCode = levels[currentLevel].code.split('');
-    let correct = true;
-    
-    for (let i = 0; i < slots.length; i++) {
-        if (slots[i].textContent !== levelCode[i]) {
-            correct = false;
-            break;
-        }
-    }
-    
-    if (correct) {
+    if(isCorrect){
         showMessage('🎉 Chính xác! Tiến sang level tiếp theo...', 'success');
-        
-        // Save progress to backend
-        try {
-            const token = localStorage.getItem('token');
-            if (token) {
-                await fetch(`${API_BASE}/complete-level`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ level: currentLevel + 1 })
-                });
-            }
-        } catch (e) {
-            console.error('Error saving progress:', e);
-        }
-        
-        setTimeout(() => {
-            currentLevel++;
-            renderLevel();
-        }, 1500);
+        try{
+            const token=localStorage.getItem('token');
+            if(token) await fetch(`${API_BASE}/complete-level`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({level:currentLevel+1})});
+        }catch(e){ console.error(e); }
+        setTimeout(()=>{ currentLevel++; renderLevel(); },1500);
     }
 }
 
-function completeGame() {
-    hintEl.textContent = '🎊 Chúc mừng! Bạn đã hoàn thành tất cả các level!';
-    answerContainer.innerHTML = '';
-    shuffleContainer.innerHTML = '';
-    rewardBtn.style.display = 'block';
-    resetBtn.style.display = 'none';
-    progressFill.style.width = '100%';
-    levelInfo.textContent = 'Hoàn thành!';
-    if (timerInterval) {
-        clearInterval(timerInterval);
-    }
+function completeGame(){
+    hintEl.textContent='🎊 Chúc mừng! Hoàn thành tất cả level!';
+    answerContainer.innerHTML='';
+    shuffleContainer.innerHTML='';
+    rewardBtn.style.display='block';
+    resetBtn.style.display='none';
+    progressFill.style.width='100%';
+    levelInfo.textContent='Hoàn thành!';
+    if(timerInterval) clearInterval(timerInterval);
 }
 
 // Timer
-function startTimer() {
-    timerInterval = setInterval(() => {
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            timerEl.textContent = '⏰ Hết thời gian!';
-            showMessage('Thời gian đã hết! Vui lòng làm lại.', 'error');
-            answerContainer.querySelectorAll('.answerSlot').forEach(s => {
-                s.textContent = '';
-                s.classList.remove('filled');
-            });
-            shuffleContainer.innerHTML = '';
-            return;
-        }
-        
-        let min = Math.floor(timeLeft / 60);
-        let sec = timeLeft % 60;
-        timerEl.textContent = `⏱️ Thời gian: ${min}:${sec < 10 ? '0' + sec : sec}`;
+function startTimer(){
+    if(timerInterval) clearInterval(timerInterval);
+    timerInterval=setInterval(()=>{
+        if(timeLeft<=0){ clearInterval(timerInterval); timerEl.textContent='⏰ Hết thời gian!'; showMessage('Thời gian đã hết! Làm lại.', 'error'); shuffleContainer.innerHTML=''; answerContainer.querySelectorAll('.answerSlot').forEach(s=>{s.textContent=''; s.classList.remove('filled');}); return; }
+        let m=Math.floor(timeLeft/60),s=timeLeft%60;
+        timerEl.textContent=`⏱️ Thời gian: ${m}:${s<10?'0'+s:s}`;
         timeLeft--;
-    }, 1000);
+    },1000);
 }
 
-// Reset level
-resetBtn.addEventListener('click', () => {
-    renderLevel();
-    showMessage('Đã làm mới level hiện tại', 'info');
+// Reset
+resetBtn.addEventListener('click', ()=>{ renderLevel(); showMessage('Đã làm mới level hiện tại','info'); });
+
+// Reward
+rewardBtn.addEventListener('click', async ()=>{
+    const token=localStorage.getItem('token'); if(!token){ showMessage('⚠️ Bạn cần đăng nhập', 'error'); return; }
+    rewardBtn.disabled=true; showMessage('Đang xử lý...','info');
+    try{
+        const res=await fetch(`${API_BASE}/reward`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}});
+        const data=await res.json();
+        if(data.success){ showMessage(`🎉 Nhận ${data.amount.toLocaleString()}đ`,'success'); rewardBtn.textContent='✅ Đã nhận'; }
+        else{ showMessage(`❌ ${data.error}`,'error'); rewardBtn.disabled=false; }
+    }catch(e){ console.error(e); showMessage('❌ Lỗi kết nối server','error'); rewardBtn.disabled=false; }
 });
 
-// Reward button
-rewardBtn.addEventListener('click', async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        showMessage('⚠️ Bạn cần đăng nhập để nhận thưởng', 'error');
-        return;
-    }
+// Init
+async function initGame(){
+    const token=localStorage.getItem('token');
+    if(!token){ showMessage('⚠️ Vui lòng đăng nhập để chơi','error'); return; }
 
-    rewardBtn.disabled = true;
-    showMessage('Đang xử lý...', 'info');
+    try{
+        const res=await fetch(`${API_BASE}/status`,{headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        if(data.rewardClaimed){ hintEl.textContent='✅ Bạn đã nhận thưởng!'; answerContainer.innerHTML=''; shuffleContainer.innerHTML=''; progressFill.style.width='100%'; levelInfo.textContent='Đã hoàn thành'; timerEl.textContent='🎉 Cảm ơn!'; return; }
+        if(data.completed){ currentLevel=levels.length; completeGame(); return; }
+        if(data.level>0){ currentLevel=data.level; showMessage(`Tiếp tục từ level ${currentLevel+1}`,'info'); }
 
-    try {
-        const res = await fetch(`${API_BASE}/reward`, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            }
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-            showMessage(`🎉 Hoàn thành! Bạn nhận được ${data.amount.toLocaleString()}đ`, 'success');
-            rewardBtn.textContent = '✅ Đã nhận thưởng';
-        } else {
-            showMessage(`❌ ${data.error}`, 'error');
-            rewardBtn.disabled = false;
-        }
-    } catch (e) {
-        console.error(e);
-        showMessage('❌ Lỗi kết nối server', 'error');
-        rewardBtn.disabled = false;
-    }
-});
-
-// Initialize game
-async function initGame() {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-        showMessage('⚠️ Vui lòng đăng nhập để chơi', 'error');
-        return;
-    }
-
-    try {
-        const res = await fetch(`${API_BASE}/status`, {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const data = await res.json();
-        
-        if (data.rewardClaimed) {
-            hintEl.textContent = '✅ Bạn đã hoàn thành và nhận thưởng rồi!';
-            answerContainer.innerHTML = '';
-            shuffleContainer.innerHTML = '';
-            progressFill.style.width = '100%';
-            levelInfo.textContent = 'Đã hoàn thành';
-            timerEl.textContent = '🎉 Cảm ơn bạn đã tham gia!';
-            return;
-        }
-        
-        if (data.completed) {
-            currentLevel = levels.length;
-            completeGame();
-            return;
-        }
-        
-        if (data.level > 0) {
-            currentLevel = data.level;
-            showMessage(`Tiếp tục từ level ${currentLevel + 1}`, 'info');
-        }
-        
         renderLevel();
         startTimer();
-    } catch (e) {
-        console.error(e);
-        showMessage('❌ Lỗi kết nối server. Chơi ở chế độ offline.', 'error');
-        renderLevel();
-        startTimer();
-    }
+    }catch(e){ console.error(e); showMessage('❌ Lỗi server, chơi offline','error'); renderLevel(); startTimer(); }
 }
 
-// Start game
 initGame();
 </script>
-
-  <script>
-(function(){
-  // WHITELIST: nếu user là admin (bạn thay bằng check thật), bỏ qua
-  const isAdmin = !!window.__IS_ADMIN__; // set ở server-render nếu cần
-  if(isAdmin) return;
-
-  // overlay nhẹ nhàng
-  function showNotice(reason) {
-    if(document.getElementById('__devtools_notice')) return;
-    const d = document.createElement('div');
-    d.id = '__devtools_notice';
-    d.style.cssText = [
-      'position:fixed','left:12px','bottom:12px','z-index:2147483647',
-      'background:rgba(0,0,0,0.8)','color:#fff','padding:10px 14px',
-      'border-radius:8px','font-family:Arial,Helvetica,sans-serif','font-size:13px'
-    ].join(';');
-    d.innerHTML = `<strong>Cảnh báo bảo mật</strong><div style="margin-top:6px">Việc mở DevTools/Inspector được phát hiện (${reason}). Nếu bạn không phải là developer, xin đóng DevTools để tiếp tục.</div>`;
-    document.body.appendChild(d);
-    setTimeout(()=> { d.remove && d.remove(); }, 8000);
-  }
-
-  // chặn context menu? (bật/tắt tùy trang)
-  // document.addEventListener('contextmenu', e => e.preventDefault());
-
-  // chặn phím tắt
-  document.addEventListener('keydown', (e) => {
-    const key = e.key?.toLowerCase();
-    if (e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'j' || key === 'c')) ||
-        (e.ctrlKey && key === 'u')) {
-      e.preventDefault();
-      showNotice('phím tắt');
-    }
-  });
-
-  // detect bằng resize (răn đe)
-  let lastOpen = false;
-  const detectResize = () => {
-    const open = (window.outerWidth - window.innerWidth > 160) || (window.outerHeight - window.innerHeight > 160);
-    if(open && !lastOpen) showNotice('panel mở');
-    lastOpen = open;
-  };
-  window.addEventListener('resize', detectResize);
-  setInterval(detectResize, 1000);
-})();
-</script>
-
-  
-
 </body>
 </html>
+
