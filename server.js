@@ -29,6 +29,8 @@ const { Client, GatewayIntentBits } = require('discord.js');
 
 
 
+//123
+
 
 
 
@@ -1356,7 +1358,6 @@ app.post('/api/user/change-password', authMiddleware, async (req, res) => {
     });
   }
 });
-
 // GỬI BOT SENDBOT -------------------->
 
 const client = new Client({
@@ -1446,6 +1447,7 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(TOKEN);
+
 
 // 👑 API ROUTES ADMIN (Yêu cầu isAdmin Middleware)
 
