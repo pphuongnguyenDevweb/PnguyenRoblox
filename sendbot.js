@@ -10,9 +10,9 @@ const client = new Client({
 });
 
 const TOKEN = process.env.DISCORD_BOT_TOKEN;
-const API_SEND_ONE = 'https://humoral-antonina-denudative.ngrok-free.dev/api/admin/send-notification';
-const API_SEND_ALL = 'https://humoral-antonina-denudative.ngrok-free.dev/api/admin/send-notification-all';
-const API_ADD_CASH = 'https://humoral-antonina-denudative.ngrok-free.dev/api/admin/add-cash';
+const API_SEND_ONE = 'https://pnguyenroblox.onrender.com/api/admin/send-notification';
+const API_SEND_ALL = 'https://pnguyenroblox.onrender.com/api/admin/send-notification-all';
+const API_ADD_CASH = 'https://pnguyenroblox.onrender.com/api/admin/add-cash';
 
 client.once('clientReady', () => {
   console.log(`🤖 Bot đã đăng nhập: ${client.user.tag}`);
