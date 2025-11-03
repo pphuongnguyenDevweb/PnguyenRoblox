@@ -1199,17 +1199,6 @@ app.post('/api/admin/send-notification-all', async (req, res) => {
 });
 
 // ✅ Cộng tiền vào tài khoản user
-// ---- MODEL GIAO DỊCH CHỐNG DUPE ----
-const mongoose = require('mongoose');
-
-const cashTransactionSchema = new mongoose.Schema({
-  transactionId: { type: String, required: true, unique: true },
-  username: { type: String, required: true },
-  amount: { type: Number, required: true },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const CashTransaction = mongoose.models.CashTransaction || mongoose.model('CashTransaction', cashTransactionSchema);
 
 
 // ✅ Cộng tiền vào tài khoản user (chống cộng trùng)
