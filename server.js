@@ -1422,7 +1422,7 @@ const API_ADD_CASH = 'https://pnguyenroblox.onrender.com/api/admin/add-cash';
 // ✅ Map lưu ID của message đã xử lý để tránh duplicate
 const processedMessages = new Set();
 
-client.once('ready', () => {
+client.once('clientReady', () => {
   console.log(`🤖 Bot đã đăng nhập: ${client.user.tag}`);
 });
 
