@@ -1199,50 +1199,78 @@ app.post('/api/admin/send-notification-all', async (req, res) => {
 });
 
 // ✅ Cộng tiền vào tài khoản user
+// ---- MODEL GIAO DỊCH CHỐNG DUPE ----
+const mongoose = require('mongoose');
+
+const cashTransactionSchema = new mongoose.Schema({
+  transactionId: { type: String, required: true, unique: true },
+  username: { type: String, required: true },
+  amount: { type: Number, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const CashTransaction = mongoose.models.CashTransaction || mongoose.model('CashTransaction', cashTransactionSchema);
+
+
+// ✅ Cộng tiền vào tài khoản user (chống cộng trùng)
 app.post('/api/admin/add-cash', async (req, res) => {
   try {
     const { username, amount, transactionId } = req.body;
+
     if (!username || !amount) {
       return res.status(400).json({ success: false, error: 'Thiếu username hoặc amount' });
     }
 
-    // ✅ Kiểm tra duplicate theo transactionId (nếu bot gửi nhiều lần)
-    if (transactionId) {
-      const existing = await CashTransaction.findOne({ transactionId });
-      if (existing) {
-        return res.status(409).json({ success: false, error: 'Duplicate transaction, đã xử lý trước đó.' });
-      }
+    // Tạo transactionId nếu không có
+    const txId = transactionId || `${username}-${Date.now()}`;
+
+    // 🔍 Kiểm tra trùng transaction
+    const existingTx = await CashTransaction.findOne({ transactionId: txId });
+    if (existingTx) {
+      console.warn(`⚠️ Giao dịch trùng lặp: ${txId}`);
+      return res.status(409).json({ success: false, error: 'Giao dịch này đã được xử lý trước đó.' });
     }
 
+    // 🔍 Kiểm tra user tồn tại
     const user = await User.findOne({ username });
-    if (!user) return res.status(404).json({ success: false, error: 'Không tìm thấy user' });
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy user' });
+    }
 
+    // ✅ Ghi nhận giao dịch vào DB trước
+    await CashTransaction.create({ transactionId: txId, username, amount });
+
+    // ✅ Cộng tiền
     user.balance = (user.balance || 0) + Number(amount);
     await user.save();
 
-    // Gửi notification tránh dupe
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    const exists = await Notification.findOne({
+    console.log(`💰 Đã cộng ${amount} vào tài khoản ${username} (Tổng: ${user.balance})`);
+
+    // ✅ Kiểm tra thông báo trùng trong 5 phút gần nhất
+    const recentNotif = await Notification.findOne({
       user_id: user._id,
       message: `[Admin]: Bạn đã được cộng ${amount} vào tài khoản.`,
-      createdAt: { $gte: fiveMinutesAgo }
+      createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) }
     });
 
-    if (!exists) {
+    if (!recentNotif) {
       await Notification.create({
         user_id: user._id,
         message: `[Admin]: Bạn đã được cộng ${amount} vào tài khoản.`,
         from_admin: true,
         createdAt: new Date()
       });
+      console.log(`📩 Đã gửi thông báo cộng tiền cho ${username}`);
+    } else {
+      console.log(`⚠️ Bỏ qua thông báo trùng cho ${username}`);
     }
 
-    // Ghi transactionId nếu có
-    if (transactionId) {
-      await CashTransaction.create({ transactionId, username, amount });
-    }
-
-    res.json({ success: true, username, new_balance: user.balance });
+    res.json({
+      success: true,
+      username,
+      new_balance: user.balance,
+      transactionId: txId
+    });
   } catch (err) {
     console.error('🔥 Lỗi khi cộng tiền:', err);
     res.status(500).json({ success: false, error: 'Lỗi khi cộng tiền' });
