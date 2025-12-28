@@ -1,5 +1,9 @@
-// server.js - Phiên bản Hoàn Chỉnh (Đã tích hợp JWT, Auth, Transaction)
+// Server.js 
+
 const express = require('express');
+// Bảo mật
+const helmet = require('helmet');
+
 const router = express.Router();
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -25,9 +29,8 @@ const Notification = require('./models/Notification.js');
 const axios = require('axios');
 const halloween = require('./halloween');
 const nickRouter = require("./routes/nickRouter.js");
-
-
-//123
+const { Client, GatewayIntentBits } = require('discord.js');
+const CashTransaction = require('./models/CashTransaction.js');
 
 
 
@@ -42,11 +45,12 @@ const productPath = path.join(publicPath, 'product');
 
 
 
-
-// =================================================================
-// KHỞI TẠO VÀ CẤU HÌNH CƠ BẢN
-// =================================================================
 const app = express();
+
+app.use(helmet({
+  contentSecurityPolicy: false, 
+}));
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: { origin: "*", methods: ["GET", "POST"] }
@@ -1100,7 +1104,6 @@ app.get('/api/history/balance', authMiddleware, async (req, res) => {
 });
 
 // GỬI THÔNG BÁO CHO USER TỪ DISCORD--------------------------->
-
 // ✅ Lấy danh sách thông báo của user hiện tại
 app.get('/api/notifications/me', authMiddleware, async (req, res) => {
   try {
@@ -1115,37 +1118,37 @@ app.get('/api/notifications/me', authMiddleware, async (req, res) => {
 });
 
 // ✅ Gửi thông báo đến user (chỉ admin)
-// Gửi thông báo đến user từ admin (dành cho Bot Discord)
 app.post('/api/admin/send-notification', async (req, res) => {
   try {
     const { username, message } = req.body;
 
-    console.log("📩 [API CALL] /api/admin/send-notification");
-    console.log("   ➤ Nhận dữ liệu:", { username, message });
-
     if (!username || !message) {
-      console.warn("⚠️ Thiếu username hoặc message trong request body");
       return res.status(400).json({ success: false, error: 'Thiếu username hoặc message' });
     }
 
-    // 🔍 Kiểm tra user trong MongoDB
     const user = await User.findOne({ username });
     if (!user) {
-      console.warn(`❌ Không tìm thấy user với username: ${username}`);
       return res.status(404).json({ success: false, error: 'Không tìm thấy user' });
     }
 
-    console.log(`✅ Đã tìm thấy user: ${user.username} (ID: ${user._id})`);
+    // 🔑 Check duplicate notification (trong vòng 5 phút)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const existing = await Notification.findOne({
+      user_id: user._id,
+      message: `[Admin]: ${message}`,
+      createdAt: { $gte: fiveMinutesAgo }
+    });
 
-    // 📨 Tạo thông báo trong MongoDB
+    if (existing) {
+      return res.status(409).json({ success: false, error: 'Notification đã gửi trước đó (tránh dupe).' });
+    }
+
     const notification = await Notification.create({
       user_id: user._id,
       message: `[Admin]: ${message}`,
       from_admin: true,
       createdAt: new Date()
     });
-
-    console.log(`💾 Đã lưu Notification cho user ${user.username}: ${notification.message}`);
 
     res.json({ success: true, username, notificationId: notification._id });
   } catch (err) {
@@ -1167,53 +1170,98 @@ app.post('/api/admin/send-notification-all', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Không có user nào trong hệ thống' });
     }
 
-    // Tạo thông báo cho tất cả user
-    const notifications = users.map(u => ({
-      user_id: u._id,
-      message: `[Admin]: ${message}`,
-      from_admin: true,
-      createdAt: new Date()
-    }));
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const notifications = [];
 
-    await Notification.insertMany(notifications);
-    console.log(`📢 Đã gửi thông báo cho ${users.length} người dùng.`);
+    for (const u of users) {
+      const exists = await Notification.findOne({
+        user_id: u._id,
+        message: `[Admin]: ${message}`,
+        createdAt: { $gte: fiveMinutesAgo }
+      });
+      if (!exists) {
+        notifications.push({
+          user_id: u._id,
+          message: `[Admin]: ${message}`,
+          from_admin: true,
+          createdAt: new Date()
+        });
+      }
+    }
 
-    res.json({ success: true, count: users.length });
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+
+    res.json({ success: true, count: notifications.length });
   } catch (err) {
     console.error('🔥 Lỗi khi gửi thông báo hàng loạt:', err);
     res.status(500).json({ success: false, error: 'Lỗi khi gửi thông báo hàng loạt' });
   }
 });
 
-
 // ✅ Cộng tiền vào tài khoản user
+
+
+// ✅ Cộng tiền vào tài khoản user (chống cộng trùng)
 app.post('/api/admin/add-cash', async (req, res) => {
   try {
-    const { username, amount } = req.body;
+    const { username, amount, transactionId } = req.body;
+
     if (!username || !amount) {
       return res.status(400).json({ success: false, error: 'Thiếu username hoặc amount' });
     }
 
+    // Tạo transactionId nếu không có
+    const txId = transactionId || `${username}-${Date.now()}`;
+
+    // 🔍 Kiểm tra trùng transaction
+    const existingTx = await CashTransaction.findOne({ transactionId: txId });
+    if (existingTx) {
+      console.warn(`⚠️ Giao dịch trùng lặp: ${txId}`);
+      return res.status(409).json({ success: false, error: 'Giao dịch này đã được xử lý trước đó.' });
+    }
+
+    // 🔍 Kiểm tra user tồn tại
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json({ success: false, error: 'Không tìm thấy user' });
     }
 
-    // ✅ Cộng tiền (giả sử field tên là balance hoặc cash)
+    // ✅ Ghi nhận giao dịch vào DB trước
+    await CashTransaction.create({ transactionId: txId, username, amount });
+
+    // ✅ Cộng tiền
     user.balance = (user.balance || 0) + Number(amount);
     await user.save();
 
     console.log(`💰 Đã cộng ${amount} vào tài khoản ${username} (Tổng: ${user.balance})`);
 
-    // Gửi thông báo vào hộp thư
-    await Notification.create({
+    // ✅ Kiểm tra thông báo trùng trong 5 phút gần nhất
+    const recentNotif = await Notification.findOne({
       user_id: user._id,
       message: `[Admin]: Bạn đã được cộng ${amount} vào tài khoản.`,
-      from_admin: true,
-      createdAt: new Date()
+      createdAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) }
     });
 
-    res.json({ success: true, username, new_balance: user.balance });
+    if (!recentNotif) {
+      await Notification.create({
+        user_id: user._id,
+        message: `[Admin]: Bạn đã được cộng ${amount} vào tài khoản.`,
+        from_admin: true,
+        createdAt: new Date()
+      });
+      console.log(`📩 Đã gửi thông báo cộng tiền cho ${username}`);
+    } else {
+      console.log(`⚠️ Bỏ qua thông báo trùng cho ${username}`);
+    }
+
+    res.json({
+      success: true,
+      username,
+      new_balance: user.balance,
+      transactionId: txId
+    });
   } catch (err) {
     console.error('🔥 Lỗi khi cộng tiền:', err);
     res.status(500).json({ success: false, error: 'Lỗi khi cộng tiền' });
@@ -1357,6 +1405,106 @@ app.post('/api/user/change-password', authMiddleware, async (req, res) => {
   }
 });
 
+
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ]
+});
+
+const TOKEN = process.env.DISCORD_BOT_TOKEN;
+const API_SEND_ONE = 'https://pnguyenroblox.onrender.com/api/admin/send-notification';
+const API_SEND_ALL = 'https://pnguyenroblox.onrender.com/api/admin/send-notification-all';
+const API_ADD_CASH = 'https://pnguyenroblox.onrender.com/api/admin/add-cash';
+
+// ✅ Map lưu ID của message đã xử lý để tránh duplicate
+const processedMessages = new Set();
+
+client.once('clientReady', () => {
+  console.log(`🤖 Bot đã đăng nhập: ${client.user.tag}`);
+});
+
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+
+  // 🔒 Kiểm tra duplicate message
+  if (processedMessages.has(message.id)) return;
+  processedMessages.add(message.id);
+
+  // ------------------- LỆNH GỬI THÔNG BÁO -------------------
+  if (message.content.startsWith('send!')) {
+    const match = message.content.match(/send!\s*"(.*?)"\s*@(\S+)/);
+    if (!match) return message.reply('❌ Sai cú pháp!\nVí dụ: send! "xin chào" @tenuser hoặc send! "chào cả nhà" @all');
+
+    const content = match[1];
+    const username = match[2];
+
+    try {
+      if (username === 'all') {
+        const res = await fetch(API_SEND_ALL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: content })
+        });
+        const data = await res.json();
+        if (res.ok && data.success)
+          message.reply(`✅ Đã gửi thông báo đến **${data.count}** người dùng.`);
+        else
+          message.reply(`⚠️ Lỗi: ${data.error || 'Không thể gửi cho tất cả user.'}`);
+      } else {
+        const res = await fetch(API_SEND_ONE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, message: content })
+        });
+        const data = await res.json();
+        if (res.ok && data.success)
+          message.reply(`✅ Đã gửi thông báo đến **${username}**.`);
+        else
+          message.reply(`⚠️ ${data.error || 'Không tìm thấy user.'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      message.reply('🔥 Lỗi khi gửi thông báo.');
+    }
+  }
+
+  // ------------------- LỆNH CỘNG TIỀN -------------------
+  if (message.content.startsWith('addcash!')) {
+    const match = message.content.match(/addcash!\s*"(.*?)"\s*@(\S+)/);
+    if (!match) return message.reply('❌ Sai cú pháp!\nVí dụ: addcash! "1000" @tenuser');
+
+    const amount = match[1];
+    const username = match[2];
+
+    try {
+      // Tạo transactionId duy nhất theo message.id để tránh duplicate
+      const transactionId = message.id;
+
+      const res = await fetch(API_ADD_CASH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, amount, transactionId })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success)
+        message.reply(`💰 Đã cộng **${amount}** vào tài khoản **${username}** (Số dư mới: ${data.new_balance}).`);
+      else
+        message.reply(`⚠️ Lỗi: ${data.error || 'Không rõ nguyên nhân.'}`);
+    } catch (e) {
+      console.error(e);
+      message.reply('🔥 Lỗi khi cộng tiền.');
+    }
+  }
+
+  // ✅ Xóa message đã xử lý sau 5 phút để tránh memory leak
+  setTimeout(() => processedMessages.delete(message.id), 5 * 60 * 1000);
+});
+
+client.login(TOKEN);
 
 
 // 👑 API ROUTES ADMIN (Yêu cầu isAdmin Middleware)
